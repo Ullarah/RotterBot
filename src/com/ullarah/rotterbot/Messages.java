@@ -129,6 +129,13 @@ public class Messages {
                                 botReply("[WOLFRAM] " + WolframAlpha.calculate(Utility.stringJoin(botArgs, " ")), chanCurr);
                             break;
 
+                        case "YT":
+                            if (pluginEnabled("youtube")) if (botArgs.length == 0)
+                                botReply("[YOUTUBE] Yes, let me search for nothing... nothing found!", chanCurr);
+                            else
+                                botReply("[YOUTUBE] " + Youtube.getVideoResult(Utility.stringJoin(botArgs, " ")), chanCurr);
+                            break;
+
                         case "FM":
                             if (pluginEnabled("lastfm")) if (botArgs.length == 0) {
                                 botReply("[LASTFM] Usage: <user> [top]", chanCurr);
@@ -217,7 +224,7 @@ public class Messages {
                 } catch (NullPointerException ignored) {
                 }
                 else if (Youtube.isVideo(chanSaid)) if (pluginEnabled("youtube"))
-                    botReply(Youtube.getVideoInfo(Youtube.getVideoID(chanSaid)), chanCurr);
+                    botReply("[YOUTUBE] " + Youtube.getVideoInfo(Youtube.getVideoID(chanSaid)), chanCurr);
                 else if (pluginEnabled("privilege")) Privilege.checkYour(chanUser, chanCurr, chanSaid);
                 if (pluginEnabled("recall")) Utility.setLastMessage(chanUser, chanSaid);
                 break;
