@@ -1,0 +1,31 @@
+{
+	"server":"irc.freenode.net",
+	"port":6667,
+	"nickname":"nickhere",
+	"realname":"realhere",
+	"login":"loginhere",
+	"password":"passhere",
+	"channels":[
+	  "#freenode"
+	],
+    "plugins":{
+        "welcome":true,
+		"googlesearch":true,
+		"osu":true,
+		"bigoven":true,
+		"privilege":true,
+		"showerthought":true,
+		"urbandictionary":true,
+		"wolframalpha":true,
+		"lastfm":true,
+		"youtube":true,
+		"recall":true,
+	},
+	"keys":{
+	    "osu":"putkeyhere",
+	    "bigoven":"putkeyhere",
+	    "wolframalpha":"putkeyhere",
+	    "lastfm":"putkeyhere",
+	},
+	"debug":false
+}
