@@ -102,40 +102,57 @@ public class LastFM {
 
     public static String getArtistSimilar(String artist) {
 
+        artist = artist.trim();
+
         JSONObject lastFMObject = getAPI("artist.getSimilar", "&artist=" + artist);
 
-        JSONObject similarArtistObject = (JSONObject) lastFMObject.get("similarartists");
-        JSONArray similarArtists = (JSONArray) similarArtistObject.get("artist");
+        if (lastFMObject.containsKey("similarartists")) {
 
-        int randomSimilarArtist = Utility.randInt(0, similarArtists.size());
+            JSONObject similarArtistObject = (JSONObject) lastFMObject.get("similarartists");
 
-        JSONObject similarArtist = (JSONObject) similarArtists.get(randomSimilarArtist);
+            if (!similarArtistObject.containsKey("#text")) {
+                JSONArray similarArtists = (JSONArray) similarArtistObject.get("artist");
+                int randomSimilarArtist = Utility.randInt(0, similarArtists.size());
 
-        String artistName = (String) similarArtist.get("name");
+                JSONObject similarArtist = (JSONObject) similarArtists.get(randomSimilarArtist);
 
-        return "[LASTFM] Similar Artist: " + Colour.BOLD + artistName;
+                String artistName = (String) similarArtist.get("name");
+
+                return "[LASTFM] Similar Artist to " + artist + ": " + Colour.BOLD + artistName;
+            } else return "[LASTFM] No similar artists to: " + Colour.BOLD + artist;
+
+        } else return "[LASTFM] No similar artists to: " + Colour.BOLD + artist;
 
     }
 
     public static String getTrackSimilar(String artist, String track) {
 
+        artist = artist.trim();
+        track = track.trim();
+
         JSONObject lastFMObject = getAPI("track.getSimilar", "&artist=" + artist + "&track=" + track);
 
-        JSONObject similarTrackObject = (JSONObject) lastFMObject.get("similartracks");
-        JSONArray similarTracks = (JSONArray) similarTrackObject.get("track");
+        if (lastFMObject.containsKey("similartracks")) {
 
-        int randomSimilarTrack = Utility.randInt(0, similarTracks.size());
+            JSONObject similarTrackObject = (JSONObject) lastFMObject.get("similartracks");
+            JSONArray similarTracks = (JSONArray) similarTrackObject.get("track");
 
-        JSONObject similarTrack = (JSONObject) similarTracks.get(randomSimilarTrack);
+            int randomSimilarTrack = Utility.randInt(0, similarTracks.size());
 
-        JSONObject trackArtistObject = (JSONObject) similarTrack.get("artist");
+            JSONObject similarTrack = (JSONObject) similarTracks.get(randomSimilarTrack);
 
-        String trackName = (String) similarTrack.get("name");
-        String trackArtist = (String) trackArtistObject.get("name");
+            JSONObject trackArtistObject = (JSONObject) similarTrack.get("artist");
 
-        return "[LASTFM] Similar Track: " +
-                Colour.BOLD + trackName + Colour.RESET +
-                " by " + Colour.BOLD + trackArtist;
+            String trackName = (String) similarTrack.get("name");
+            String trackArtist = (String) trackArtistObject.get("name");
+
+            return "[LASTFM] Similar Track to " + artist + " by " + track + ": " +
+                    Colour.BOLD + trackName + Colour.RESET +
+                    " by " + Colour.BOLD + trackArtist;
+
+        } else return "[LASTFM] No similar tracks to:" +
+                Colour.BOLD + artist + Colour.RESET +
+                " by " + Colour.BOLD + track;
 
     }
 
