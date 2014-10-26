@@ -6,10 +6,10 @@
 	"login":"loginhere",
 	"password":"passhere",
 	"channels":[
-	  "#freenode"
+		"#freenode"
 	],
-    "plugins":{
-        "welcome":true,
+	"plugins":{
+		"welcome":true,
 		"googlesearch":true,
 		"osu":true,
 		"bigoven":true,
@@ -22,10 +22,10 @@
 		"recall":true,
 	},
 	"keys":{
-	    "osu":"putkeyhere",
-	    "bigoven":"putkeyhere",
-	    "wolframalpha":"putkeyhere",
-	    "lastfm":"putkeyhere",
+		"osu":"putkeyhere",
+		"bigoven":"putkeyhere",
+		"wolframalpha":"putkeyhere",
+		"lastfm":"putkeyhere",
 	},
 	"debug":false
 }
