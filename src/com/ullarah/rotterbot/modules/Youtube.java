@@ -9,6 +9,7 @@ import org.json.simple.parser.ParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.regex.Matcher;
@@ -35,57 +36,85 @@ public class Youtube {
 
     }
 
-    public static String getVideoInfo(String s) {
+    public static String getVideoResult(String s) {
+
+        JSONObject entryData = getVideoEntry("http://gdata.youtube.com/feeds/api/videos?q=" + s + "&alt=json&limit=1");
+
+        JSONObject entryID = (JSONObject) entryData.get("id");
+
+        String videoEntry = (String) entryID.get("$t");
+
+        return getVideoInfo(videoEntry.substring(videoEntry.length() - 11));
+
+    }
+
+    private static JSONObject getVideoEntry(String u){
 
         try {
-            s = s.replaceAll(" ", "+");
+            URL url = new URL(u.replaceAll(" ", "+"));
+            JSONParser jsonParser = new JSONParser();
 
-            URL url = new URL("http://gdata.youtube.com/feeds/api/videos/" + s + "?v=2&alt=json");
             URLConnection conn = url.openConnection();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
 
-            JSONObject entryData = (JSONObject) jsonObject.get("entry");
+            if(jsonObject.containsKey("entry")){
 
-            JSONObject entryTitle = (JSONObject) entryData.get("title");
-            String videoTitle = (String) entryTitle.get("$t");
+                return (JSONObject) jsonObject.get("entry");
 
-            JSONArray authorArray = (JSONArray) entryData.get("author");
-            JSONObject authorObject = (JSONObject) authorArray.get(0);
-            JSONObject authorName = (JSONObject) authorObject.get("name");
-            String videoAuthor = (String) authorName.get("$t");
+            } else if (jsonObject.containsKey("feed")){
 
-            JSONObject viewObject = (JSONObject) entryData.get("yt$statistics");
-            String videoViews = (String) viewObject.get("viewCount");
+                JSONObject feedData = (JSONObject) jsonObject.get("feed");
+                JSONArray feedEntry = (JSONArray) feedData.get("entry");
 
-            JSONObject mediaObject = (JSONObject) entryData.get("media$group");
-            JSONObject durationObject = (JSONObject) mediaObject.get("yt$duration");
-            String videoDuration = (String) durationObject.get("seconds");
+                return (JSONObject) feedEntry.get(0);
 
-            JSONArray categoryArray = (JSONArray) entryData.get("category");
-            JSONObject categoryObject = (JSONObject) categoryArray.get(1);
-            String videoCategory = (String) categoryObject.get("term");
-
-            JSONObject ratingObject = (JSONObject) entryData.get("yt$rating");
-            String videoLikes = (String) ratingObject.get("numLikes");
-            String videoDislikes = (String) ratingObject.get("numDislikes");
-
-            return "[YOUTUBE] " + Colour.BOLD + videoTitle + Colour.RESET +
-                    " | " + videoAuthor +
-                    " | " + videoCategory +
-                    " | " + videoViews +
-                    " | " + Colour.GREEN + videoLikes + Colour.RESET +
-                    " / " + Colour.RED + videoDislikes + Colour.RESET +
-                    " | " + Utility.timeConversion(Integer.parseInt(videoDuration));
+            }
 
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
         return null;
+
+    }
+
+    public static String getVideoInfo(String s) {
+
+        JSONObject entryData = getVideoEntry("http://gdata.youtube.com/feeds/api/videos/" + s + "?v=2&alt=json");
+
+        JSONObject entryTitle = (JSONObject) entryData.get("title");
+        String videoTitle = (String) entryTitle.get("$t");
+
+        JSONArray authorArray = (JSONArray) entryData.get("author");
+        JSONObject authorObject = (JSONObject) authorArray.get(0);
+        JSONObject authorName = (JSONObject) authorObject.get("name");
+        String videoAuthor = (String) authorName.get("$t");
+
+        JSONObject viewObject = (JSONObject) entryData.get("yt$statistics");
+        String videoViews = (String) viewObject.get("viewCount");
+
+        JSONObject mediaObject = (JSONObject) entryData.get("media$group");
+        JSONObject durationObject = (JSONObject) mediaObject.get("yt$duration");
+        String videoDuration = (String) durationObject.get("seconds");
+
+        JSONArray categoryArray = (JSONArray) entryData.get("category");
+        JSONObject categoryObject = (JSONObject) categoryArray.get(1);
+        String videoCategory = (String) categoryObject.get("term");
+
+        JSONObject ratingObject = (JSONObject) entryData.get("yt$rating");
+        String videoLikes = (String) ratingObject.get("numLikes");
+        String videoDislikes = (String) ratingObject.get("numDislikes");
+
+        return Colour.BOLD + videoTitle + Colour.RESET +
+                " | " + videoAuthor +
+                " | " + videoCategory +
+                " | " + videoViews +
+                " | " + Colour.GREEN + videoLikes + Colour.RESET +
+                " / " + Colour.RED + videoDislikes + Colour.RESET +
+                " | " + Utility.timeConversion(Integer.parseInt(videoDuration));
 
     }
 
