@@ -20,6 +20,7 @@
 		"lastfm":true,
 		"youtube":true,
 		"recall":true,
+		"tell":true,
 	},
 	"keys":{
 		"osu":"putkeyhere",
