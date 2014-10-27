@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import static com.ullarah.rotterbot.Utility.urlDecode;
+
 public class ShowerThought {
 
     public static String randomThought() {
@@ -18,7 +20,11 @@ public class ShowerThought {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            return (reader.readLine().replaceFirst("\\d+;;;", ""));
+            String result = reader.readLine().replaceFirst("\\d+;;;", "");
+
+            reader.close();
+
+            return ("[THOUGHT] " + urlDecode(result));
 
         } catch (IOException ignored) {
         }
