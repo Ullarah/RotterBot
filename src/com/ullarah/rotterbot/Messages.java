@@ -6,11 +6,16 @@ import com.ullarah.rotterbot.modules.Youtube;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import static com.ullarah.rotterbot.Client.*;
+import static com.ullarah.rotterbot.Commands.*;
 
 public class Messages {
+
+    public static final HashMap<String, String> recallMessage = new HashMap<>();
+    public static final HashMap<String, String> tellMessage = new HashMap<>();
 
     private static final String getCommandRegex = "\\^([a-zA-Z0-9]+)(?:\\s?)(.*)";
     public static final Pattern commandPattern = Pattern.compile(getCommandRegex);
@@ -55,13 +60,13 @@ public class Messages {
                         commandCount.put(chanCurr, 0);
                     }
                     if (!commandCountWarning.get(chanCurr)) if (commandCount.get(chanCurr) >= 5) {
-                        Client.commandLimit(chanCurr);
+                        commandLimit(chanCurr);
                         commandCountWarning.put(chanCurr, true);
                         botReply(Colour.BOLD + Colour.RED + "Just wait a damn minute! Geez...", chanCurr);
                     } else {
                         commandCount.put(chanCurr, commandCount.containsKey(chanCurr)
                                 ? commandCount.get(chanCurr) + 1 : 1);
-                        Commands.getCommand(chanCurr, chanUser, chanSaid);
+                        getCommand(chanCurr, chanUser, chanSaid);
                     }
                 }
 
@@ -86,10 +91,24 @@ public class Messages {
                 break;
 
             case "JOIN":
+                sendRaw("NAMES " + chanCurr);
                 if (pluginEnabled("welcome")) if (chanUser.equals(Client.getNickname())) {
                     Thread.sleep(2500);
                     botReply("Howdy everybody!", chanCurr);
+                } else if (tellMessage.containsKey(chanUser.toLowerCase())) {
+                    botReply("Hey " + chanUser + "? Got a message for you!", chanCurr);
+                    botReply("[TELL] " + tellMessage.get(chanUser.toLowerCase()), chanCurr);
+                    tellMessage.remove(chanUser);
                 } else botReply("Howdy " + chanUser + "!", chanCurr);
+
+                break;
+
+            case "PART":
+                sendRaw("NAMES " + chanCurr);
+                break;
+
+            case "QUIT":
+                sendRaw("NAMES " + chanCurr);
                 break;
 
         }
