@@ -11,36 +11,32 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import static com.ullarah.rotterbot.Utility.urlEncode;
+
 public class UrbanDictionary {
 
-    public static String[] getWord(String s) {
+    public static String getWord(String input) throws IOException, ParseException {
 
-        try {
-            s = s.replaceAll(" ", "+");
+        URL url = new URL("http://api.urbandictionary.com/v0/define?term=" + urlEncode(input));
 
-            URL url = new URL("http://api.urbandictionary.com/v0/define?term=" + s);
+        URLConnection conn = url.openConnection();
 
-            URLConnection conn = url.openConnection();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        JSONParser jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
 
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
+        reader.close();
 
-            JSONArray listObject = (JSONArray) jsonObject.get("list");
+        JSONArray listObject = (JSONArray) jsonObject.get("list");
 
-            JSONObject firstResult;
+        JSONObject firstResult;
 
-            if (listObject.isEmpty()) return new String[]{"No Results Found", "http://www.urbandictionary.com/"};
-            else firstResult = (JSONObject) listObject.get(0);
+        if (listObject.isEmpty()) return "[UD] No Results Found";
 
-            return new String[]{firstResult.get("word").toString(), firstResult.get("definition").toString()};
+        firstResult = (JSONObject) listObject.get(0);
 
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return "[UD] " + Colour.BOLD + firstResult.get("word") + ": " + firstResult.get("definition");
 
     }
 
