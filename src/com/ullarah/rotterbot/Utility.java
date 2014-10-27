@@ -1,12 +1,14 @@
 package com.ullarah.rotterbot;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Random;
 
 public class Utility {
 
     public static int randInt(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
+        return new Random().nextInt((max - min) + 1) + min;
     }
 
     public static String stringJoin(String[] w, String c) {
@@ -16,15 +18,20 @@ public class Utility {
     }
 
     public static String timeConversion(int s) {
-        final int minutesHour = 60;
-        final int secondsMinute = 60;
+        long longVal = ((long) s);
+        int hours = (int) longVal / 3600;
+        int remainder = (int) longVal - hours * 3600;
+        int mins = remainder / 60;
+        remainder = remainder - mins * 60;
+        int secs = remainder;
 
-        s = s % secondsMinute;
+        if (mins == 0)
+            return secs + " Seconds";
 
-        int m = (s / secondsMinute) % minutesHour;
-        int h = (s / secondsMinute) / minutesHour;
+        if (hours == 0)
+            return mins + ":" + secs;
 
-        return h + ":" + m + ":" + s;
+        return hours + ":" + mins + ":" + secs;
     }
 
     public static void setLastMessage(String u, String m) {
@@ -33,6 +40,14 @@ public class Utility {
 
     public static String getLastMessage(String u) {
         return Client.recallMessages.get(u);
+    }
+
+    public static String urlEncode(String u) throws UnsupportedEncodingException {
+        return URLEncoder.encode(u, "UTF-8");
+    }
+
+    public static String urlDecode(String u) throws UnsupportedEncodingException {
+        return URLDecoder.decode(u, "UTF-8");
     }
 
 }
