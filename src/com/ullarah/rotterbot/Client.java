@@ -8,6 +8,9 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.ullarah.rotterbot.Log.error;
 import static com.ullarah.rotterbot.Log.info;
@@ -16,6 +19,8 @@ import static com.ullarah.rotterbot.Messages.sendRaw;
 public class Client implements Runnable {
 
     public static final HashMap<String, String> recallMessages = new HashMap<>();
+    public static final HashMap<String, Integer> commandCount = new HashMap<>();
+    public static final HashMap<String, Boolean> commandCountWarning = new HashMap<>();
     private static final String config = "config.json";
     private static final JSONParser jsonParser = new JSONParser();
     public static BufferedWriter writer;
@@ -160,6 +165,7 @@ public class Client implements Runnable {
     private static void loadConfig(FileReader reader) throws IOException, ParseException {
 
         JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
+        reader.close();
 
         setServer((String) jsonObject.get("server"));
         setPort((Long) jsonObject.get("port"));
@@ -193,6 +199,21 @@ public class Client implements Runnable {
         JSONObject getKey = ((JSONObject) jsonObject.get("keys"));
 
         return (String) getKey.get(plugin);
+
+    }
+
+    public static void commandLimit(final String chanCurr) {
+
+        Runnable resetCommandLimit = new Runnable() {
+            public void run() {
+                commandCount.remove(chanCurr);
+                commandCountWarning.remove(chanCurr);
+                if (getDebug()) info("Command count reset for: " + chanCurr);
+            }
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(resetCommandLimit, 0, 60, TimeUnit.SECONDS);
 
     }
 
