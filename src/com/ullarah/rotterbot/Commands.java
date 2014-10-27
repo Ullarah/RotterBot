@@ -5,12 +5,24 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
+import static com.ullarah.rotterbot.Client.*;
+import static com.ullarah.rotterbot.Client.getDebug;
 import static com.ullarah.rotterbot.Client.pluginEnabled;
+import static com.ullarah.rotterbot.Log.info;
+import static com.ullarah.rotterbot.Messages.*;
 import static com.ullarah.rotterbot.Messages.botReply;
+import static com.ullarah.rotterbot.Messages.sendRaw;
 
 class Commands {
+
+    public static final HashMap<String, Integer> commandCount = new HashMap<>();
+    public static final HashMap<String, Boolean> commandCountWarning = new HashMap<>();
 
     public static void getCommand(String chanCurr, String chanUser, String chanSaid)
             throws IOException, ParseException {
@@ -18,7 +30,7 @@ class Commands {
         String botCommand = null;
         String[] botArgs = new String[0];
 
-        Matcher m = Messages.commandPattern.matcher(chanSaid);
+        Matcher m = commandPattern.matcher(chanSaid);
 
         if (m.find()) {
             botCommand = m.group(1);
@@ -134,7 +146,6 @@ class Commands {
 
                             }
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            ex.printStackTrace();
                             botReply("[LASTFM] Usage: similar <artist> [track]", chanCurr);
                         }
                         break;
@@ -194,10 +205,60 @@ class Commands {
                             : "[RECALL] " + Utility.getLastMessage(botArgs[0]), chanCurr);
                 break;
 
+            case "TELL":
+                if (pluginEnabled("tell")){
+
+                    sendRaw("NAMES " + chanCurr);
+                    botArgs = Utility.stringJoin(botArgs, " ").split(" ", 2);
+
+                    System.out.println(Arrays.toString(botArgs));
+
+                    try {
+                        switch (botArgs.length) {
+                            case 1:
+                                botReply("[TELL] Usage: <user> <message>", chanCurr);
+                                break;
+
+                            case 2:
+                                if(chanUserList.get(chanCurr).contains(botArgs[0].toLowerCase()))
+                                    botReply(botArgs[0].toLowerCase().equals(chanUser.toLowerCase()) ? "[TELL] Talking to yourself again " + chanUser + "?"
+                                            : "[TELL] Really? They're right there, tell them yourself.", chanCurr);
+                                else {
+                                    tellMessage.put(botArgs[0].toLowerCase(), "<" + chanUser + "> " + botArgs[1]);
+                                    botReply("[TELL] Okay, I'll try my best to let them know next time they're online.", chanCurr);
+                                }
+                                break;
+
+                            default:
+                                botReply("[TELL] Usage: <user> <message>", chanCurr);
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException ex){
+                        botReply("[TELL] Usage: <user> <message>", chanCurr);
+                    }
+
+                }
+                break;
+
             default:
                 botReply("That's no command I've heard of " + chanUser + "?", chanCurr);
                 break;
         }
+
+    }
+
+    public static void commandLimit(final String chanCurr) {
+
+        Runnable resetCommandLimit = new Runnable() {
+            public void run() {
+                commandCount.remove(chanCurr);
+                commandCountWarning.remove(chanCurr);
+                if (getDebug()) info("Command count reset for: " + chanCurr);
+            }
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(resetCommandLimit, 0, 60, TimeUnit.SECONDS);
 
     }
 
