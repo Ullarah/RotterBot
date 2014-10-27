@@ -9,11 +9,14 @@ import org.json.simple.parser.ParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.ullarah.rotterbot.Utility.urlDecode;
+import static com.ullarah.rotterbot.Utility.urlEncode;
 
 public class Youtube {
 
@@ -36,9 +39,10 @@ public class Youtube {
 
     }
 
-    public static String getVideoResult(String s) {
+    public static String getVideoResult(String input) throws UnsupportedEncodingException {
 
-        JSONObject entryData = getVideoEntry("http://gdata.youtube.com/feeds/api/videos?q=" + s + "&alt=json&limit=1");
+        JSONObject entryData = getVideoEntry("http://gdata.youtube.com/feeds/api/videos?q=" +
+                urlEncode(input) + "&alt=json&limit=1");
 
         JSONObject entryID = (JSONObject) entryData.get("id");
 
@@ -48,23 +52,25 @@ public class Youtube {
 
     }
 
-    private static JSONObject getVideoEntry(String u){
+    private static JSONObject getVideoEntry(String url) {
 
         try {
-            URL url = new URL(u.replaceAll(" ", "+"));
+
             JSONParser jsonParser = new JSONParser();
 
-            URLConnection conn = url.openConnection();
+            URLConnection conn = new URL(url).openConnection();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
 
-            if(jsonObject.containsKey("entry")){
+            reader.close();
+
+            if (jsonObject.containsKey("entry")) {
 
                 return (JSONObject) jsonObject.get("entry");
 
-            } else if (jsonObject.containsKey("feed")){
+            } else if (jsonObject.containsKey("feed")) {
 
                 JSONObject feedData = (JSONObject) jsonObject.get("feed");
                 JSONArray feedEntry = (JSONArray) feedData.get("entry");
@@ -81,17 +87,17 @@ public class Youtube {
 
     }
 
-    public static String getVideoInfo(String s) {
+    public static String getVideoInfo(String input) throws UnsupportedEncodingException {
 
-        JSONObject entryData = getVideoEntry("http://gdata.youtube.com/feeds/api/videos/" + s + "?v=2&alt=json");
+        JSONObject entryData = getVideoEntry("http://gdata.youtube.com/feeds/api/videos/" + input + "?v=2&alt=json");
 
         JSONObject entryTitle = (JSONObject) entryData.get("title");
-        String videoTitle = (String) entryTitle.get("$t");
+        String videoTitle = urlDecode((String) entryTitle.get("$t"));
 
         JSONArray authorArray = (JSONArray) entryData.get("author");
         JSONObject authorObject = (JSONObject) authorArray.get(0);
         JSONObject authorName = (JSONObject) authorObject.get("name");
-        String videoAuthor = (String) authorName.get("$t");
+        String videoAuthor = urlDecode((String) authorName.get("$t"));
 
         JSONObject viewObject = (JSONObject) entryData.get("yt$statistics");
         String videoViews = (String) viewObject.get("viewCount");
@@ -114,7 +120,8 @@ public class Youtube {
                 " | " + videoViews +
                 " | " + Colour.GREEN + videoLikes + Colour.RESET +
                 " / " + Colour.RED + videoDislikes + Colour.RESET +
-                " | " + Utility.timeConversion(Integer.parseInt(videoDuration));
+                " | " + Utility.timeConversion(Integer.parseInt(videoDuration)) +
+                " | " + "https://youtu.be/" + input;
 
     }
 
