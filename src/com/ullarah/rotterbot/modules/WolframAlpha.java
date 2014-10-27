@@ -11,6 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
 import static com.ullarah.rotterbot.Client.pluginKey;
+import static com.ullarah.rotterbot.Utility.urlEncode;
 
 public class WolframAlpha {
 
@@ -18,11 +19,10 @@ public class WolframAlpha {
 
         try {
 
-            input = input.replaceAll(" ", "+");
-
             DocumentBuilderFactory docBF = DocumentBuilderFactory.newInstance();
             DocumentBuilder docB = docBF.newDocumentBuilder();
-            Document doc = docB.parse("http://api.wolframalpha.com/v2/query?appid=" + pluginKey("wolframalpha") + "&input=" + input + "&format=plaintext");
+            Document doc = docB.parse("http://api.wolframalpha.com/v2/query?appid="
+                    + pluginKey("wolframalpha") + "&input=" + urlEncode(input) + "&format=plaintext");
 
             doc.getDocumentElement().normalize();
 
