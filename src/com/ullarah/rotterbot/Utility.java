@@ -5,6 +5,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Random;
 
+import static com.ullarah.rotterbot.Messages.*;
+
 public class Utility {
 
     public static int randInt(int min, int max) {
@@ -35,11 +37,11 @@ public class Utility {
     }
 
     public static void setLastMessage(String u, String m) {
-        Client.recallMessages.put(u, m);
+        recallMessage.put(u, m);
     }
 
     public static String getLastMessage(String u) {
-        return Client.recallMessages.get(u);
+        return recallMessage.get(u);
     }
 
     public static String urlEncode(String u) throws UnsupportedEncodingException {
