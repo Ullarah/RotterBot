@@ -8,17 +8,19 @@ import org.json.simple.parser.ParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 
 import static com.ullarah.rotterbot.Client.pluginKey;
+import static com.ullarah.rotterbot.Utility.urlDecode;
+import static com.ullarah.rotterbot.Utility.urlEncode;
 
 public class Osu {
 
     private static JSONObject getAPI(String type, String args) {
 
         try {
-            args = args.replaceAll(" ", "+");
 
             URL url = new URL("https://osu.ppy.sh/api/" + type + "?k=" + pluginKey("osu") + args);
             URLConnection conn = url.openConnection();
@@ -27,6 +29,8 @@ public class Osu {
             JSONParser jsonParser = new JSONParser();
 
             JSONArray jsonArray = (JSONArray) jsonParser.parse(reader);
+
+            reader.close();
 
             return (JSONObject) jsonArray.get(0);
         } catch (IOException | ParseException e) {
@@ -37,30 +41,30 @@ public class Osu {
 
     }
 
-    private static String[] getBeatmap(String map) {
+    private static String[] getBeatmap(String map) throws UnsupportedEncodingException {
 
-        JSONObject osuObject = getAPI("get_beatmaps", "&b=" + map);
+        JSONObject osuObject = getAPI("get_beatmaps", "&b=" + urlEncode(map));
 
-        String title = (String) osuObject.get("title");
-        String artist = (String) osuObject.get("artist");
+        String title = urlDecode((String) osuObject.get("title"));
+        String artist = urlDecode((String) osuObject.get("artist"));
 
         return new String[]{title, artist};
 
     }
 
-    private static String getUser(String user) {
+    private static String getUser(String user) throws UnsupportedEncodingException {
 
-        JSONObject osuObject = getAPI("get_user", "&u=" + user);
+        JSONObject osuObject = getAPI("get_user", "&u=" + urlEncode(user));
 
-        return (String) osuObject.get("username");
+        return urlDecode((String) osuObject.get("username"));
 
     }
 
-    public static String getUserInfo(String user) {
+    public static String getUserInfo(String user) throws UnsupportedEncodingException {
 
-        JSONObject osuObject = getAPI("get_user", "&u=" + user);
+        JSONObject osuObject = getAPI("get_user", "&u=" + urlEncode(user));
 
-        String username = (String) osuObject.get("username");
+        String username = urlDecode((String) osuObject.get("username"));
         String playcount = (String) osuObject.get("playcount");
         String rank = (String) osuObject.get("pp_rank");
         String pp = (String) osuObject.get("pp_raw");
@@ -76,15 +80,15 @@ public class Osu {
 
     }
 
-    public static String getUserType(String user, String type) throws IOException, ParseException {
+    public static String getUserType(String user, String type) throws IOException {
 
-        JSONObject osuObject = getAPI(type, "&u=" + user + "&limit=1");
+        JSONObject osuObject = getAPI(urlEncode(type), "&u=" + urlEncode(user) + "&limit=1");
 
         String[] beatmap = getBeatmap((String) osuObject.get("beatmap_id"));
 
-        String username = getUser(user);
-        String title = beatmap[0];
-        String artist = beatmap[1];
+        String username = urlDecode(getUser(user));
+        String title = urlDecode(beatmap[0]);
+        String artist = urlDecode(beatmap[1]);
         String score = (String) osuObject.get("score");
         String maxcombo = (String) osuObject.get("maxcombo");
         String perfect = (String) osuObject.get("perfect");
