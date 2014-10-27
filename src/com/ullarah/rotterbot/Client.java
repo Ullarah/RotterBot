@@ -7,10 +7,10 @@ import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import static com.ullarah.rotterbot.Log.error;
 import static com.ullarah.rotterbot.Log.info;
@@ -18,9 +18,8 @@ import static com.ullarah.rotterbot.Messages.sendRaw;
 
 public class Client implements Runnable {
 
-    public static final HashMap<String, String> recallMessages = new HashMap<>();
-    public static final HashMap<String, Integer> commandCount = new HashMap<>();
-    public static final HashMap<String, Boolean> commandCountWarning = new HashMap<>();
+    public static final HashMap<String, ArrayList<String>> chanUserList = new HashMap<>();
+
     private static final String config = "config.json";
     private static final JSONParser jsonParser = new JSONParser();
     public static BufferedWriter writer;
@@ -35,6 +34,8 @@ public class Client implements Runnable {
     private static String password;
     private static JSONArray channels;
     private static Socket socket;
+
+    public static String line;
 
     private static Boolean getOnline() {
         return online;
@@ -113,7 +114,7 @@ public class Client implements Runnable {
         new Console().start();
     }
 
-    private static Boolean getDebug() {
+    public static Boolean getDebug() {
         return debug;
     }
 
@@ -202,21 +203,6 @@ public class Client implements Runnable {
 
     }
 
-    public static void commandLimit(final String chanCurr) {
-
-        Runnable resetCommandLimit = new Runnable() {
-            public void run() {
-                commandCount.remove(chanCurr);
-                commandCountWarning.remove(chanCurr);
-                if (getDebug()) info("Command count reset for: " + chanCurr);
-            }
-        };
-
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(resetCommandLimit, 0, 60, TimeUnit.SECONDS);
-
-    }
-
     void start() {
 
         Thread clientThread = new Thread(this);
@@ -232,17 +218,24 @@ public class Client implements Runnable {
             e.printStackTrace();
         }
         while (getOnline()) try {
-            String line;
+
             while ((line = reader.readLine()) != null) {
+
                 if (getDebug()) info(line);
+
                 if (line.contains("PING")) {
                     sendRaw("PONG " + line.substring(5));
                     if (getDebug()) info("PONG " + line.substring(5));
                 }
+
                 if (line.contains("376") && !line.contains("PRIVMSG")) {
                     sendRaw("PRIVMSG NickServ :IDENTIFY " + getPassword());
                     info("IDEN " + getLogin());
                 }
+
+                if (line.contains("353") && !line.contains("PRIVMSG"))
+                    refreshUserList(line.split(" ", 6)[4], line.split(" ", 6)[5].split(" "));
+
                 if (line.contains("NOTICE") && line.contains("identified") && !line.contains("PRIVMSG"))
                     for (Object channel : getChannels()) {
                         info("JOIN " + channel.toString().toLowerCase());
@@ -250,10 +243,24 @@ public class Client implements Runnable {
                         Thread.sleep(2500);
                     }
                 else Messages.servMessage(line);
+
                 writer.flush();
             }
         } catch (IOException | InterruptedException | ParseException ignored) {
         }
+    }
+
+    public void refreshUserList(String channel, String[] users){
+
+        ArrayList<String> chanUsers = new ArrayList<>();
+
+        for( String user : users ) {
+            String[] userNameValid = user.split("[a-zA-Z0-9]+");
+            chanUsers.add(userNameValid.length == 0 ? user.toLowerCase() : user.substring(1).toLowerCase());
+        }
+
+        chanUserList.put(channel,chanUsers);
+
     }
 
 }
