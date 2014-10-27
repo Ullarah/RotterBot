@@ -11,41 +11,38 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import static com.ullarah.rotterbot.Utility.urlDecode;
+import static com.ullarah.rotterbot.Utility.urlEncode;
+
 public class Google {
 
-    public static String[] feelingLucky(String s, Boolean isSafe) {
+    public static String feelingLucky(String input, Boolean safe) throws IOException, ParseException {
 
-        String r;
+        String isSafe;
 
-        if (isSafe) r = "active";
-        else r = "off";
+        if (safe) isSafe = "active";
+        else isSafe = "off";
 
-        try {
-            s = s.replaceAll(" ", "+");
+        URL url = new URL("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&safe=" + isSafe + "&lr=lang_en&q=" + urlEncode(input));
+        URLConnection conn = url.openConnection();
 
-            URL url = new URL("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&safe=" + r + "&lr=lang_en&q=" + s);
-            URLConnection conn = url.openConnection();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        JSONParser jsonParser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
 
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
+        reader.close();
 
-            JSONObject responseData = (JSONObject) jsonObject.get("responseData");
-            JSONArray resultData = (JSONArray) responseData.get("results");
+        JSONObject responseData = (JSONObject) jsonObject.get("responseData");
+        JSONArray resultData = (JSONArray) responseData.get("results");
 
-            JSONObject firstResult;
+        JSONObject firstResult;
 
-            if (resultData.isEmpty()) return new String[]{"No Results Found", "http://www.google.com/"};
-            else firstResult = (JSONObject) resultData.get(0);
+        if (resultData.isEmpty()) return "[GOOGLE] No Results Found";
 
-            return new String[]{firstResult.get("titleNoFormatting").toString(), firstResult.get("url").toString()};
+        firstResult = (JSONObject) resultData.get(0);
 
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return "[GOOGLE] " + urlDecode(firstResult.get("titleNoFormatting").toString()) + " | " + urlDecode(firstResult.get("url").toString());
 
     }
 
