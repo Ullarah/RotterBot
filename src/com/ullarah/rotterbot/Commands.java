@@ -4,6 +4,7 @@ import com.ullarah.rotterbot.modules.*;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
@@ -24,6 +25,7 @@ class Commands {
     public static final HashMap<String, Integer> commandCount = new HashMap<>();
     public static final HashMap<String, Boolean> commandCountWarning = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
     public static void getCommand(String chanCurr, String chanUser, String chanSaid)
             throws IOException, ParseException {
 
@@ -211,8 +213,6 @@ class Commands {
                     sendRaw("NAMES " + chanCurr);
                     botArgs = Utility.stringJoin(botArgs, " ").split(" ", 2);
 
-                    System.out.println(Arrays.toString(botArgs));
-
                     try {
                         switch (botArgs.length) {
                             case 1:
@@ -221,12 +221,24 @@ class Commands {
 
                             case 2:
                                 if(chanUserList.get(chanCurr).contains(botArgs[0].toLowerCase()))
-                                    botReply(botArgs[0].toLowerCase().equals(chanUser.toLowerCase()) ? "[TELL] Talking to yourself again " + chanUser + "?"
+                                    botReply(botArgs[0].toLowerCase().equals(chanUser.toLowerCase())
+                                            ? "[TELL] Talking to yourself again " + chanUser + "?"
+                                            : botArgs[0].toLowerCase().equals(getNickname().toLowerCase())
+                                            ? "[TELL] I'm right here! What's up " + chanUser + "?"
                                             : "[TELL] Really? They're right there, tell them yourself.", chanCurr);
-                                else {
-                                    tellMessage.put(botArgs[0].toLowerCase(), "<" + chanUser + "> " + botArgs[1]);
+                                else if (tellMessage.get(botArgs[0]) == null || tellMessage.get(botArgs[0]).size() < 5) {
+                                    if (tellMessage.containsKey(botArgs[0]))
+                                        tellMessage.get(botArgs[0]).add("<" + chanUser + "> " + botArgs[1]);
+                                    else {
+                                        final String[] finalBotArgs = botArgs;
+                                        final String finalChanUser = chanUser;
+                                        tellMessage.put(botArgs[0], new ArrayList<String>() {{
+                                            add("<" + finalChanUser + "> " + finalBotArgs[1]);
+                                        }});
+                                    }
+                                    tellUser.put(botArgs[0], tellMessage);
                                     botReply("[TELL] Okay, I'll try my best to let them know next time they're online.", chanCurr);
-                                }
+                                } else botReply("[TELL] I can only send 5 messages to a user.", chanCurr);
                                 break;
 
                             default:
@@ -258,7 +270,7 @@ class Commands {
         };
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(resetCommandLimit, 0, 60, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(resetCommandLimit, 0, 120, TimeUnit.SECONDS);
 
     }
 
