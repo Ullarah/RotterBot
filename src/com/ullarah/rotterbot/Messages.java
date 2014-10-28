@@ -6,6 +6,7 @@ import com.ullarah.rotterbot.modules.Youtube;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,9 @@ import static com.ullarah.rotterbot.Commands.*;
 public class Messages {
 
     public static final HashMap<String, String> recallMessage = new HashMap<>();
-    public static final HashMap<String, String> tellMessage = new HashMap<>();
+
+    public static final HashMap<String, ArrayList> tellMessage = new HashMap<>();
+    public static final HashMap<String, HashMap> tellUser = new HashMap<>();
 
     private static final String getCommandRegex = "\\^([a-zA-Z0-9]+)(?:\\s?)(.*)";
     public static final Pattern commandPattern = Pattern.compile(getCommandRegex);
@@ -60,7 +63,6 @@ public class Messages {
                         commandCount.put(chanCurr, 0);
                     }
                     if (!commandCountWarning.get(chanCurr)) if (commandCount.get(chanCurr) >= 5) {
-                        commandLimit(chanCurr);
                         commandCountWarning.put(chanCurr, true);
                         botReply(Colour.BOLD + Colour.RED + "Just wait a damn minute! Geez...", chanCurr);
                     } else {
@@ -70,7 +72,7 @@ public class Messages {
                     }
                 }
 
-                if (sedPattern.matcher(chanSaid).find()) try {
+                if (chanSaid.startsWith("s/") && sedPattern.matcher(chanSaid).find()) try {
                     String[] sedString = chanSaid.split("/", 3);
                     if (Utility.getLastMessage(chanUser).contains(sedString[1])) {
                         String replacedMessage = Utility.getLastMessage(chanUser).replaceAll(sedString[1], sedString[2]);
@@ -95,10 +97,11 @@ public class Messages {
                 if (pluginEnabled("welcome")) if (chanUser.equals(Client.getNickname())) {
                     Thread.sleep(2500);
                     botReply("Howdy everybody!", chanCurr);
-                } else if (tellMessage.containsKey(chanUser.toLowerCase())) {
+                } else if (tellUser.containsKey(chanUser.toLowerCase())) {
                     botReply("Hey " + chanUser + "? Got a message for you!", chanCurr);
-                    botReply("[TELL] " + tellMessage.get(chanUser.toLowerCase()), chanCurr);
+                    for( Object message : tellMessage.get(chanUser)) botReply("[TELL] " + message, chanCurr);
                     tellMessage.remove(chanUser);
+                    tellUser.remove(chanUser);
                 } else botReply("Howdy " + chanUser + "!", chanCurr);
 
                 break;
