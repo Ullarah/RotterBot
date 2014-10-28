@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.ullarah.rotterbot.Commands.commandLimit;
 import static com.ullarah.rotterbot.Log.error;
 import static com.ullarah.rotterbot.Log.info;
 import static com.ullarah.rotterbot.Messages.sendRaw;
@@ -240,6 +241,7 @@ public class Client implements Runnable {
                     for (Object channel : getChannels()) {
                         info("JOIN " + channel.toString().toLowerCase());
                         sendRaw("JOIN " + channel.toString().toLowerCase());
+                        commandLimit(channel.toString().toLowerCase());
                         Thread.sleep(2500);
                     }
                 else Messages.servMessage(line);
