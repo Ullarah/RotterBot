@@ -164,6 +164,23 @@ public class Client implements Runnable {
 
     }
 
+    public static void reconnect() throws InterruptedException, IOException {
+
+        info("Reconnecting...");
+        Thread.sleep(1000);
+        for (Object channel : Client.getChannels()) {
+            sendRaw("PART " + channel);
+            info("PART " + channel);
+            Thread.sleep(1000);
+        }
+        sendRaw("QUIT");
+        Thread.sleep(2500);
+        Client.getSocket().close();
+        Thread.sleep(2500);
+        connect();
+
+    }
+
     private static void loadConfig(FileReader reader) throws IOException, ParseException {
 
         JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
@@ -216,7 +233,11 @@ public class Client implements Runnable {
         try {
             connect();
         } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                reconnect();
+            } catch (InterruptedException | IOException e1) {
+                error("Cannot connect to: " + getServer());
+            }
         }
         while (getOnline()) try {
 
