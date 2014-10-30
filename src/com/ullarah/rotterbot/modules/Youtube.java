@@ -110,9 +110,14 @@ public class Youtube {
         JSONObject categoryObject = (JSONObject) categoryArray.get(1);
         String videoCategory = (String) categoryObject.get("term");
 
-        JSONObject ratingObject = (JSONObject) entryData.get("yt$rating");
-        String videoLikes = (String) ratingObject.get("numLikes");
-        String videoDislikes = (String) ratingObject.get("numDislikes");
+        String videoLikes = "0";
+        String videoDislikes = "0";
+
+        if(entryData.containsKey("yt$rating")){
+            JSONObject ratingObject = (JSONObject) entryData.get("yt$rating");
+            videoLikes = (String) ratingObject.get("numLikes");
+            videoDislikes = (String) ratingObject.get("numDislikes");
+        }
 
         return Colour.BOLD + videoTitle + Colour.RESET +
                 " | " + videoAuthor +
