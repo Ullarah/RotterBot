@@ -12,12 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import static com.ullarah.rotterbot.Client.*;
-import static com.ullarah.rotterbot.Client.getDebug;
 import static com.ullarah.rotterbot.Client.getPluginEnabled;
 import static com.ullarah.rotterbot.Log.info;
 import static com.ullarah.rotterbot.Messages.*;
-import static com.ullarah.rotterbot.Messages.botMessage;
-import static com.ullarah.rotterbot.Messages.sendRaw;
 
 class Commands {
 
@@ -223,13 +220,13 @@ class Commands {
                 break;
 
             case "LOBOTOMY":
-                if (getPluginEnabled("insults")){
+                if (getPluginEnabled("replies")){
                     botAction("drools", chanCurr);
-                    Client.botPlugins.put("replies",false);
+                    botPlugins.put("replies",false);
                 } else {
                     botAction("blinks rapidly", chanCurr);
                     botMessage("Wha? What happened?", chanCurr);
-                    Client.botPlugins.put("replies",true);
+                    botPlugins.put("replies",true);
                 }
                 break;
 
@@ -277,7 +274,7 @@ class Commands {
 
                 }
                 break;
-            
+
             case "HELP":
                 botMessage("Commands: T | G | UD | OSU | WA | YT | FM | HUNGRY | RECALL | IGNORE | LOBOTOMY | TELL", chanCurr);
                 break;
