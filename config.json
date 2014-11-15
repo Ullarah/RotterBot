@@ -5,9 +5,10 @@
 	"realname":"realhere",
 	"login":"loginhere",
 	"password":"passhere",
-	"channels":[
-		"#freenode"
-	],
+	"channels":{
+		"#freenode":"nice",
+		"#whatever":"naughty",
+	},
 	"plugins":{
 		"welcome":true,
 		"googlesearch":true,
