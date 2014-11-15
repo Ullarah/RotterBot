@@ -85,7 +85,8 @@ public class Messages {
                 }
 
                 if (chanSaid.toLowerCase().contains(getNickname().toLowerCase())) if (getPluginEnabled("insults"))
-                    botMessage(getRandomMessage("replies", chanUser, chanCurr), chanCurr);
+                    if(!ignoreUserList.contains(chanUser.toLowerCase()))
+                        botMessage(getRandomMessage("replies", chanUser, chanCurr), chanCurr);
 
                 if (chanSaid.startsWith("s/") && sedPattern.matcher(chanSaid).find()) try {
                     String[] sedString = chanSaid.split("/", 3);
@@ -140,36 +141,30 @@ public class Messages {
 
         JSONArray jsonReply;
 
-        if( !ignoreUserList.contains(user.toLowerCase()) ){
+        switch(type.toUpperCase()){
 
-            switch(type.toUpperCase()){
-
-                case "REPLIES":
-                    JSONObject jsonReplyObject = (JSONObject) jsonObject.get("replies");
-                    if( Client.botNice.get(channel).equals("nice") ){
-                        jsonReply = (JSONArray) jsonReplyObject.get("nice");
-                        return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
-                    } else {
-                        jsonReply = (JSONArray) jsonReplyObject.get("naughty");
-                        return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
-                    }
-
-                case "JOIN":
-                    jsonReply = (JSONArray) jsonObject.get("join");
+            case "REPLIES":
+                JSONObject jsonReplyObject = (JSONObject) jsonObject.get("replies");
+                if( Client.botNice.get(channel).equals("nice") ){
+                    jsonReply = (JSONArray) jsonReplyObject.get("nice");
                     return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
-
-                case "PART":
-                    jsonReply = (JSONArray) jsonObject.get("part");
+                } else {
+                    jsonReply = (JSONArray) jsonReplyObject.get("naughty");
                     return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
+                }
 
-                default:
-                    return "Uhhh...";
+            case "JOIN":
+                jsonReply = (JSONArray) jsonObject.get("join");
+                return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
 
-            }
+            case "PART":
+                jsonReply = (JSONArray) jsonObject.get("part");
+                return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
+
+            default:
+                return "Uhhh...";
 
         }
-
-        return null;
 
     }
 
