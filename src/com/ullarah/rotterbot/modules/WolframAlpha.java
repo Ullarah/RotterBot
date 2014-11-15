@@ -35,7 +35,7 @@ public class WolframAlpha {
                 return ("Sorry, couldn't quite understand that...");
             }
 
-        } catch (IOException | ParserConfigurationException | SAXException | ParseException e) {
+        } catch (IOException | ParserConfigurationException | SAXException e) {
             e.printStackTrace();
         }
 
