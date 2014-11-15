@@ -7,10 +7,10 @@ import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.ullarah.rotterbot.Commands.commandLimit;
 import static com.ullarah.rotterbot.Log.error;
@@ -20,11 +20,13 @@ import static com.ullarah.rotterbot.Messages.sendRaw;
 public class Client implements Runnable {
 
     public static final HashMap<String, ArrayList<String>> chanUserList = new HashMap<>();
+    public static final HashMap<String, Boolean> botPlugins = new HashMap<>();
+    public static final HashMap<String, String> botAPIKeys = new HashMap<>();
 
     private static final String config = "config.json";
-    private static final JSONParser jsonParser = new JSONParser();
+    public static final JSONParser jsonParser = new JSONParser();
     public static BufferedWriter writer;
-    private static BufferedReader reader;
+    public static BufferedReader reader;
     private static Boolean online;
     private static Boolean debug;
     private static String server;
@@ -35,6 +37,10 @@ public class Client implements Runnable {
     private static String password;
     private static JSONArray channels;
     private static Socket socket;
+    public static long pingtime = System.currentTimeMillis();
+
+    private static ScheduledExecutorService pingTimeoutExecutor;
+    public static ScheduledExecutorService commandCountExecutor;
 
     public static String line;
 
@@ -143,12 +149,16 @@ public class Client implements Runnable {
             sendRaw("USER " + getLogin() + " \"\" \"\" :" + getRealname());
             info("USER " + getLogin());
             writer.flush();
+            runPingTimeout();
             setOnline(true);
         }
 
     }
 
     public static void disconnect() throws InterruptedException, IOException {
+
+        pingTimeoutExecutor.shutdown();
+        commandCountExecutor.shutdown();
 
         info("Disconnecting...");
         Thread.sleep(2500);
@@ -165,6 +175,9 @@ public class Client implements Runnable {
     }
 
     public static void reconnect() throws InterruptedException, IOException {
+
+        pingTimeoutExecutor.shutdown();
+        commandCountExecutor.shutdown();
 
         info("Reconnecting...");
         Thread.sleep(1000);
@@ -199,25 +212,23 @@ public class Client implements Runnable {
 
         setDebug((boolean) jsonObject.get("debug"));
 
+        JSONObject getPlugins = (JSONObject) jsonObject.get("plugins");
+        for( Object plugin : getPlugins.keySet() ) botPlugins.put((String) plugin, (Boolean) getPlugins.get(plugin));
+
+        JSONObject getAPIKeys = (JSONObject) jsonObject.get("keys");
+        for( Object keys : getAPIKeys.keySet() ) botAPIKeys.put((String) keys, (String) getAPIKeys.get(keys));
+
     }
 
-    public static boolean pluginEnabled(String plugin) throws IOException, ParseException {
+    public static boolean getPluginEnabled(String plugin) throws IOException, ParseException {
 
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(new FileReader(config));
-
-        JSONObject getPlugins = ((JSONObject) jsonObject.get("plugins"));
-
-        return (boolean) getPlugins.get(plugin);
+        return botPlugins.get(plugin);
 
     }
 
     public static String pluginKey(String plugin) throws IOException, ParseException {
 
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(new FileReader(config));
-
-        JSONObject getKey = ((JSONObject) jsonObject.get("keys"));
-
-        return (String) getKey.get(plugin);
+        return botAPIKeys.get(plugin);
 
     }
 
@@ -248,6 +259,7 @@ public class Client implements Runnable {
                 if (line.contains("PING")) {
                     sendRaw("PONG " + line.substring(5));
                     if (getDebug()) info("PONG " + line.substring(5));
+                    pingtime = System.currentTimeMillis();
                 }
 
                 if (line.contains("376") && !line.contains("PRIVMSG")) {
@@ -283,6 +295,27 @@ public class Client implements Runnable {
         }
 
         chanUserList.put(channel,chanUsers);
+
+    }
+
+    public static void runPingTimeout() {
+
+        Runnable getCurrentPing = new Runnable() {
+            public void run() {
+                long diffPing = System.currentTimeMillis() - pingtime;
+                if(diffPing >= 600000) try {
+                    if (getDebug()) info("Ping Timeout. Reconnecting.");
+                    pingtime = System.currentTimeMillis();
+                    reconnect();
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+                else if (getDebug()) info("Ping Valid.");
+            }
+        };
+
+        pingTimeoutExecutor = Executors.newScheduledThreadPool(1);
+        pingTimeoutExecutor.scheduleAtFixedRate(getCurrentPing, 0, 5, TimeUnit.MINUTES);
 
     }
 
