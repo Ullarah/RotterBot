@@ -277,6 +277,10 @@ class Commands {
 
                 }
                 break;
+            
+            case "HELP":
+                botMessage("Commands: T | G | UD | OSU | WA | YT | FM | HUNGRY | RECALL | IGNORE | LOBOTOMY | TELL", chanCurr);
+                break;
 
             default:
                 botMessage("That's no command I've heard of " + chanUser + "?", chanCurr);
