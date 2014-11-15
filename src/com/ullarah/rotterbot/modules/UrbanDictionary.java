@@ -36,7 +36,7 @@ public class UrbanDictionary {
 
         firstResult = (JSONObject) listObject.get(0);
 
-        return "[UD] " + Colour.BOLD + firstResult.get("word") + ": " + firstResult.get("definition");
+        return "[UD] " + Colour.BOLD + firstResult.get("word") + ": " + Colour.RESET + firstResult.get("definition");
 
     }
 
