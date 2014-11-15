@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.ullarah.rotterbot.Messages.botReply;
+import static com.ullarah.rotterbot.Messages.botMessage;
 
 public class Privilege {
 
@@ -28,7 +28,7 @@ public class Privilege {
         for (String word : said.split(" "))
             if (triggerWords.contains(word) && privIteration == 0) {
                 privIteration = 1;
-                botReply(user + ", " + Colour.RED + Colour.BOLD + "Check your privilege!", chan);
+                botMessage(user + ", " + Colour.RED + Colour.BOLD + "Check your privilege!", chan);
             }
 
     }
