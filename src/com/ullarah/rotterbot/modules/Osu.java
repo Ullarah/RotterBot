@@ -60,6 +60,42 @@ public class Osu {
 
     }
 
+    public static String getVersus(String userOne, String userTwo) throws UnsupportedEncodingException{
+
+        if(userOne.toLowerCase().equals(userTwo.toLowerCase())) return "[OSU] ... How vain!";
+
+        String userOneFinal = null;
+        String userTwoFinal = null;
+
+        JSONObject osuUserOne = getAPI("get_user", "&u=" + urlEncode(userOne));
+        JSONObject osuUserTwo = getAPI("get_user", "&u=" + urlEncode(userTwo));
+
+        String nameOne = urlDecode((String) osuUserOne.get("username"));
+        String nameTwo = urlDecode((String) osuUserTwo.get("username"));
+
+        String countryOne = (String) osuUserOne.get("country");
+        String countryTwo = (String) osuUserTwo.get("country");
+
+        Float ppOne = Float.parseFloat((String) osuUserOne.get("pp_raw"));
+        Float ppTwo = Float.parseFloat((String) osuUserTwo.get("pp_raw"));
+
+        if( ppOne > ppTwo ){
+            userOneFinal = Colour.GREEN + nameOne + Colour.RESET + " [" + countryOne + "] " + ppOne;
+            userTwoFinal = Colour.RED + nameTwo + Colour.RESET + " [" + countryTwo + "] " + ppTwo;
+        }
+        if( ppOne < ppTwo ){
+            userOneFinal = Colour.RED + nameOne + Colour.RESET + " [" + countryOne + "] " + ppOne;
+            userTwoFinal = Colour.GREEN + nameTwo + Colour.RESET + " [" + countryTwo + "] " + ppTwo;
+        }
+        if( ppOne.equals( ppTwo ) ){
+            userOneFinal = Colour.GOLD + nameOne + Colour.RESET + " [" + countryOne + "] " + ppOne;
+            userTwoFinal = Colour.GOLD + nameTwo + Colour.RESET + " [" + countryTwo + "] " + ppTwo;
+        }
+
+        return "[OSU] " + userOneFinal + " | " + userTwoFinal;
+
+    }
+
     public static String getUserInfo(String user) throws UnsupportedEncodingException {
 
         JSONObject osuObject = getAPI("get_user", "&u=" + urlEncode(user));
