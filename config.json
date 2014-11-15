@@ -22,6 +22,7 @@
 		"youtube":true,
 		"recall":true,
 		"tell":true,
+		"replies":true,
 	},
 	"keys":{
 		"osu":"putkeyhere",
