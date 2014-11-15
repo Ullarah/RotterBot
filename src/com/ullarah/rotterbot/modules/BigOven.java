@@ -42,7 +42,7 @@ public class BigOven {
             return "[BIGOVEN] " + Colour.BOLD + title + Colour.RESET +
                     " | " + description + " | " + cuisine + " | " + category + " | " + url;
 
-        } catch (IOException | ParserConfigurationException | SAXException | ParseException e) {
+        } catch (IOException | ParserConfigurationException | SAXException e) {
             return recipe();
         }
 
