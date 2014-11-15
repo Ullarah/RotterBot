@@ -214,7 +214,7 @@ class Commands {
                 if(botArgs.length == 0){
                     botMessage("[IGNORE] Ignore whom?", chanCurr);
                 } else {
-                    if (ignoreUserList.contains(botArgs[0]) ){
+                    if (ignoreUserList.contains(botArgs[0].toLowerCase()) ){
                         ignoreUserList.remove(botArgs[0].toLowerCase());
                         botMessage("[IGNORE] Oh, " + botArgs[0] + " wants to talk to me again?", chanCurr);
                     } else {
