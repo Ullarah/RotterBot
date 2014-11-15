@@ -213,25 +213,23 @@ class Commands {
             case "IGNORE":
                 if(botArgs.length == 0){
                     botMessage("[IGNORE] Ignore whom?", chanCurr);
+                } else if (ignoreUserList.contains(botArgs[0].toLowerCase())) {
+                    ignoreUserList.remove(botArgs[0].toLowerCase());
+                    botMessage("[IGNORE] Oh, " + botArgs[0] + " wants to talk to me again?", chanCurr);
                 } else {
-                    if (ignoreUserList.contains(botArgs[0].toLowerCase()) ){
-                        ignoreUserList.remove(botArgs[0].toLowerCase());
-                        botMessage("[IGNORE] Oh, " + botArgs[0] + " wants to talk to me again?", chanCurr);
-                    } else {
-                        ignoreUserList.add(botArgs[0].toLowerCase());
-                        botMessage("[IGNORE] Sure thing. I'll ignore " + botArgs[0] + " from now on!", chanCurr);
-                    }
+                    ignoreUserList.add(botArgs[0].toLowerCase());
+                    botMessage("[IGNORE] Sure thing. I'll ignore " + botArgs[0] + " from now on!", chanCurr);
                 }
                 break;
 
             case "LOBOTOMY":
                 if (getPluginEnabled("insults")){
                     botAction("drools", chanCurr);
-                    Client.botPlugins.put("insults",false);
+                    Client.botPlugins.put("replies",false);
                 } else {
                     botAction("blinks rapidly", chanCurr);
                     botMessage("Wha? What happened?", chanCurr);
-                    Client.botPlugins.put("insults",true);
+                    Client.botPlugins.put("replies",true);
                 }
                 break;
 
