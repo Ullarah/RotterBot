@@ -67,6 +67,9 @@ public class Osu {
         String userOneFinal = null;
         String userTwoFinal = null;
 
+        String userCompare = null;
+        Integer rankDiff = 0;
+
         JSONObject osuUserOne = getAPI("get_user", "&u=" + urlEncode(userOne));
         JSONObject osuUserTwo = getAPI("get_user", "&u=" + urlEncode(userTwo));
 
@@ -80,19 +83,25 @@ public class Osu {
         Integer rankTwo = Integer.parseInt((String) osuUserTwo.get("pp_rank"));
 
         if( rankOne > rankTwo ){
+            rankDiff = rankOne - rankTwo;
             userOneFinal = Colour.GREEN + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
             userTwoFinal = Colour.RED + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
+            userCompare = nameOne + " is beating " + nameTwo + " by " + rankDiff + " ranks!";
         }
         if( rankOne < rankTwo ){
+            rankDiff = rankTwo - rankOne;
             userOneFinal = Colour.RED + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
             userTwoFinal = Colour.GREEN + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
+            userCompare = nameTwo + " is beating " + nameOne + " by " + rankDiff + " ranks!";
+
         }
         if( rankOne.equals( rankTwo ) ){
             userOneFinal = Colour.GOLD + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
             userTwoFinal = Colour.GOLD + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
+            userCompare = "Both are the exact same rank!";
         }
 
-        return "[OSU] " + userOneFinal + " | " + userTwoFinal;
+        return "[OSU] " + userOneFinal + " | " + userTwoFinal + " | " + userCompare;
 
     }
 
