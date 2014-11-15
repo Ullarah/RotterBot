@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static com.ullarah.rotterbot.Client.*;
@@ -22,6 +23,8 @@ public class Messages {
 
     public static final HashMap<String, ArrayList> tellMessage = new HashMap<>();
     public static final HashMap<String, HashMap> tellUser = new HashMap<>();
+
+    public static final List<String> ignoreUserList = new ArrayList<>();
 
     private static final String getCommandRegex = "\\^([a-zA-Z0-9]+)(?:\\s?)(.*)";
     public static final Pattern commandPattern = Pattern.compile(getCommandRegex);
@@ -82,7 +85,7 @@ public class Messages {
                 }
 
                 if (chanSaid.toLowerCase().contains(getNickname().toLowerCase())) if (getPluginEnabled("insults"))
-                    botMessage(getRandomMessage("insults", chanUser), chanCurr);
+                    botMessage(getRandomMessage("replies", chanUser, chanCurr), chanCurr);
 
                 if (chanSaid.startsWith("s/") && sedPattern.matcher(chanSaid).find()) try {
                     String[] sedString = chanSaid.split("/", 3);
@@ -114,8 +117,7 @@ public class Messages {
                     for( Object message : tellMessage.get(chanUser)) botMessage("[TELL] " + message, chanCurr);
                     tellMessage.remove(chanUser);
                     tellUser.remove(chanUser);
-                } else botMessage("Howdy " + chanUser + "!", chanCurr);
-
+                } else if (!ignoreUserList.contains(chanUser.toLowerCase())) botMessage("Howdy " + chanUser + "!", chanCurr);
                 break;
 
             case "PART":
@@ -130,16 +132,44 @@ public class Messages {
 
     }
 
-    public static String getRandomMessage(String type, String user) throws IOException, ParseException {
+    public static String getRandomMessage(String type, String user, String channel) throws IOException, ParseException {
 
         FileReader botReplies = new FileReader("messages.json");
         JSONObject jsonObject = (JSONObject) jsonParser.parse(botReplies);
         botReplies.close();
 
-        JSONArray jsonReply = (JSONArray) jsonObject.get(type);
-        String gotInsult = (String) jsonReply.get(Utility.randInt(0,jsonReply.size()-1));
+        JSONArray jsonReply;
 
-        return gotInsult.replaceAll("#s", user);
+        if( !ignoreUserList.contains(user.toLowerCase()) ){
+
+            switch(type.toUpperCase()){
+
+                case "REPLIES":
+                    JSONObject jsonReplyObject = (JSONObject) jsonObject.get("replies");
+                    if( Client.botNice.get(channel).equals("nice") ){
+                        jsonReply = (JSONArray) jsonReplyObject.get("nice");
+                        return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
+                    } else {
+                        jsonReply = (JSONArray) jsonReplyObject.get("naughty");
+                        return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
+                    }
+
+                case "JOIN":
+                    jsonReply = (JSONArray) jsonObject.get("join");
+                    return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
+
+                case "PART":
+                    jsonReply = (JSONArray) jsonObject.get("part");
+                    return jsonReply.get(Utility.randInt(0,jsonReply.size()-1)).toString().replaceAll("#s", user);
+
+                default:
+                    return "Uhhh...";
+
+            }
+
+        }
+
+        return null;
 
     }
 
