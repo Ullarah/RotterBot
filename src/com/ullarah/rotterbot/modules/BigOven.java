@@ -38,13 +38,14 @@ public class BigOven {
                 url = doc.getElementsByTagName("WebURL").item(0).getTextContent();
 
             } else recipe();
-            return "[BIGOVEN] " + title + " | " + description + " | " + cuisine + " | " + category + " | " + url;
+
+            return "[BIGOVEN] " + Colour.BOLD + title + Colour.RESET +
+                    " | " + description + " | " + cuisine + " | " + category + " | " + url;
 
         } catch (IOException | ParserConfigurationException | SAXException | ParseException e) {
-            e.printStackTrace();
+            return recipe();
         }
 
-        return null;
     }
 
 }
