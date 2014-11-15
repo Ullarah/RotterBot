@@ -76,20 +76,20 @@ public class Osu {
         String countryOne = (String) osuUserOne.get("country");
         String countryTwo = (String) osuUserTwo.get("country");
 
-        Float ppOne = Float.parseFloat((String) osuUserOne.get("pp_raw"));
-        Float ppTwo = Float.parseFloat((String) osuUserTwo.get("pp_raw"));
+        Float rankOne = Float.parseFloat((String) osuUserOne.get("pp_rank"));
+        Float rankTwo = Float.parseFloat((String) osuUserTwo.get("pp_rank"));
 
-        if( ppOne > ppTwo ){
-            userOneFinal = Colour.GREEN + nameOne + Colour.RESET + " [" + countryOne + "] " + ppOne;
-            userTwoFinal = Colour.RED + nameTwo + Colour.RESET + " [" + countryTwo + "] " + ppTwo;
+        if( rankOne > rankTwo ){
+            userOneFinal = Colour.GREEN + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
+            userTwoFinal = Colour.RED + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
         }
-        if( ppOne < ppTwo ){
-            userOneFinal = Colour.RED + nameOne + Colour.RESET + " [" + countryOne + "] " + ppOne;
-            userTwoFinal = Colour.GREEN + nameTwo + Colour.RESET + " [" + countryTwo + "] " + ppTwo;
+        if( rankOne < rankTwo ){
+            userOneFinal = Colour.RED + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
+            userTwoFinal = Colour.GREEN + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
         }
-        if( ppOne.equals( ppTwo ) ){
-            userOneFinal = Colour.GOLD + nameOne + Colour.RESET + " [" + countryOne + "] " + ppOne;
-            userTwoFinal = Colour.GOLD + nameTwo + Colour.RESET + " [" + countryTwo + "] " + ppTwo;
+        if( rankOne.equals( rankTwo ) ){
+            userOneFinal = Colour.GOLD + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
+            userTwoFinal = Colour.GOLD + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
         }
 
         return "[OSU] " + userOneFinal + " | " + userTwoFinal;
