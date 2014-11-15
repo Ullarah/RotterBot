@@ -210,15 +210,11 @@ public class Client implements Runnable {
         setLogin((String) jsonObject.get("login"));
         setPassword((String) jsonObject.get("password"));
 
-        JSONArray channelList = new JSONArray();
-
         JSONObject getChannels = (JSONObject) jsonObject.get("channels");
         for( Object channel : getChannels.keySet() ) {
-            channelList.add(channel);
+            getChannels().add(channel);
             botNice.put((String) channel,(String)getChannels.get(channel));
         }
-
-        setChannels(channelList);
 
         setDebug((boolean) jsonObject.get("debug"));
 
