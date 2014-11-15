@@ -120,14 +120,42 @@ class Console implements Runnable {
                 }
 
             case "JOIN":
-                String getJoinChannel = args.get(0).toLowerCase();
-                if (Client.getChannels().contains(getJoinChannel))
-                    info("Already in channel " + getJoinChannel);
-                else {
-                    Client.getChannels().add(getJoinChannel);
-                    info("JOIN " + getJoinChannel);
-                    sendRaw("JOIN " + getJoinChannel);
-                    commandLimit(getJoinChannel);
+                String getJoinChannel;
+                String getJoinReplies;
+                switch(args.size()){
+                    case 0:
+                        info("Usage: JOIN <channel> [naughty]");
+                        break;
+
+                    case 1:
+                        getJoinChannel = args.get(0).toLowerCase();
+                        if (Client.getChannels().contains(getJoinChannel))
+                            info("Already in channel " + getJoinChannel);
+                        else {
+                            Client.botNice.put(getJoinChannel,"nice");
+                            Client.getChannels().add(getJoinChannel);
+                            info("JOIN " + getJoinChannel);
+                            sendRaw("JOIN " + getJoinChannel);
+                            commandLimit(getJoinChannel);
+                        }
+                        break;
+
+                    case 2:
+                        getJoinChannel = args.get(0).toLowerCase();
+                        getJoinReplies = args.get(1).toLowerCase();
+                        if (Client.getChannels().contains(getJoinChannel))
+                            info("Already in channel " + getJoinChannel);
+                        else {
+                            Client.botNice.put(getJoinChannel,getJoinReplies);
+                            Client.getChannels().add(getJoinChannel);
+                            info("JOIN " + getJoinChannel);
+                            sendRaw("JOIN " + getJoinChannel);
+                            commandLimit(getJoinChannel);
+                        }
+                        break;
+
+                    default:
+                        info("Usage: JOIN <channel> [naughty]");
                 }
                 break;
 
