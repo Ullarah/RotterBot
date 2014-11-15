@@ -6,8 +6,12 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import static com.ullarah.rotterbot.Commands.*;
+import static com.ullarah.rotterbot.Commands.commandCount;
+import static com.ullarah.rotterbot.Commands.commandLimit;
 import static com.ullarah.rotterbot.Log.info;
-import static com.ullarah.rotterbot.Messages.botReply;
+import static com.ullarah.rotterbot.Messages.*;
+import static com.ullarah.rotterbot.Messages.botMessage;
 import static com.ullarah.rotterbot.Messages.sendRaw;
 
 class Console implements Runnable {
@@ -89,8 +93,15 @@ class Console implements Runnable {
                 else {
                     String channel = currentChannel.substring(0, currentChannel.length() - 2);
                     if (args.isEmpty()) info("Cannot send empty message.");
-                    else botReply(Utility.stringJoin(args.toArray(new String[args.size()]), " "), channel);
+                    else botMessage(Utility.stringJoin(args.toArray(new String[args.size()]), " "), channel);
                 }
+                break;
+
+            case "ACTION":
+                if (currentChannel.equals("#> ")) info("Attach to a channel: ATTACH <channel>");
+                else if (args.isEmpty()) info("Cannot send empty action!");
+                else botAction(Utility.stringJoin(args.toArray(new String[args.size()]), " "),
+                            currentChannel.replace(">",""));
                 break;
 
             case "PM":
@@ -104,26 +115,31 @@ class Console implements Runnable {
                     default:
                         String user = args.get(0);
                         args.remove(0);
-                        botReply(Utility.stringJoin(args.toArray(new String[args.size()]), " "), user);
+                        botMessage(Utility.stringJoin(args.toArray(new String[args.size()]), " "), user);
                         break;
                 }
 
             case "JOIN":
-                if (Client.getChannels().contains(args.get(0).toLowerCase()))
-                    info("Already in channel " + args.get(0).toLowerCase());
+                String getJoinChannel = args.get(0).toLowerCase();
+                if (Client.getChannels().contains(getJoinChannel))
+                    info("Already in channel " + getJoinChannel);
                 else {
-                    Client.getChannels().add(args.get(0).toLowerCase());
-                    info("JOIN " + args.get(0).toLowerCase());
-                    sendRaw("JOIN " + args.get(0).toLowerCase());
+                    Client.getChannels().add(getJoinChannel);
+                    info("JOIN " + getJoinChannel);
+                    sendRaw("JOIN " + getJoinChannel);
+                    commandLimit(getJoinChannel);
                 }
                 break;
 
             case "PART":
-                if (Client.getChannels().contains(args.get(0).toLowerCase())) {
-                    Client.getChannels().remove(args.get(0).toLowerCase());
-                    info("PART " + args.get(0).toLowerCase());
-                    sendRaw("PART " + args.get(0).toLowerCase());
-                } else info("Not in channel " + args.get(0).toLowerCase());
+                String getPartChannel = args.get(0).toLowerCase();
+                if (Client.getChannels().contains(getPartChannel)) {
+                    Client.getChannels().remove(getPartChannel);
+                    info("PART " + getPartChannel);
+                    sendRaw("PART " + getPartChannel);
+                    commandCount.remove(getPartChannel);
+                    commandCountWarning.remove(getPartChannel);
+                } else info("Not in channel " + getPartChannel);
                 break;
 
             case "NICK":
