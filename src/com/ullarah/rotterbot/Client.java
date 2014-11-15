@@ -22,6 +22,7 @@ public class Client implements Runnable {
     public static final HashMap<String, ArrayList<String>> chanUserList = new HashMap<>();
     public static final HashMap<String, Boolean> botPlugins = new HashMap<>();
     public static final HashMap<String, String> botAPIKeys = new HashMap<>();
+    public static final HashMap<String, String> botNice = new HashMap<>();
 
     private static final String config = "config.json";
     public static final JSONParser jsonParser = new JSONParser();
@@ -194,6 +195,7 @@ public class Client implements Runnable {
 
     }
 
+    @SuppressWarnings("unchecked")
     private static void loadConfig(FileReader reader) throws IOException, ParseException {
 
         JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
@@ -208,7 +210,15 @@ public class Client implements Runnable {
         setLogin((String) jsonObject.get("login"));
         setPassword((String) jsonObject.get("password"));
 
-        setChannels((JSONArray) jsonObject.get("channels"));
+        JSONArray channelList = new JSONArray();
+
+        JSONObject getChannels = (JSONObject) jsonObject.get("channels");
+        for( Object channel : getChannels.keySet() ) {
+            channelList.add(channel);
+            botNice.put((String) channel,(String)getChannels.get(channel));
+        }
+
+        setChannels(channelList);
 
         setDebug((boolean) jsonObject.get("debug"));
 
