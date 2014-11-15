@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
@@ -209,6 +208,20 @@ class Commands {
                             : "[RECALL] " + Utility.getLastMessage(chanUser)
                             : Utility.getLastMessage(botArgs[0]) == null ? "[RECALL] They haven't said anything?"
                             : "[RECALL] " + Utility.getLastMessage(botArgs[0]), chanCurr);
+                break;
+
+            case "IGNORE":
+                if(botArgs.length == 0){
+                    botMessage("[IGNORE] Ignore whom?", chanCurr);
+                } else {
+                    if (ignoreUserList.contains(botArgs[0]) ){
+                        ignoreUserList.remove(botArgs[0].toLowerCase());
+                        botMessage("[IGNORE] Oh, " + botArgs[0] + " wants to talk to me again?", chanCurr);
+                    } else {
+                        ignoreUserList.add(botArgs[0].toLowerCase());
+                        botMessage("[IGNORE] Sure thing. I'll ignore " + botArgs[0] + " from now on!", chanCurr);
+                    }
+                }
                 break;
 
             case "LOBOTOMY":
