@@ -84,7 +84,7 @@ public class Messages {
                     }
                 }
 
-                if (chanSaid.toLowerCase().contains(getNickname().toLowerCase())) if (getPluginEnabled("insults"))
+                if (chanSaid.toLowerCase().contains(getNickname().toLowerCase())) if (getPluginEnabled("replies"))
                     if(!ignoreUserList.contains(chanUser.toLowerCase()))
                         botMessage(getRandomMessage("replies", chanUser, chanCurr), chanCurr);
 
