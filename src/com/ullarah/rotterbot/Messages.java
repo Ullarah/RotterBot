@@ -118,11 +118,13 @@ public class Messages {
                     for( Object message : tellMessage.get(chanUser)) botMessage("[TELL] " + message, chanCurr);
                     tellMessage.remove(chanUser);
                     tellUser.remove(chanUser);
-                } else if (!ignoreUserList.contains(chanUser.toLowerCase())) botMessage("Howdy " + chanUser + "!", chanCurr);
+                } else if (!ignoreUserList.contains(chanUser.toLowerCase()))
+                    botMessage(getRandomMessage("join",chanUser,chanCurr), chanCurr);
                 break;
 
             case "PART":
                 sendRaw("NAMES " + chanCurr);
+                botMessage(getRandomMessage("part",chanUser,chanCurr), chanCurr);
                 break;
 
             case "QUIT":
@@ -133,7 +135,7 @@ public class Messages {
 
     }
 
-    public static String getRandomMessage(String type, String user, String channel) throws IOException, ParseException {
+    private static String getRandomMessage(String type, String user, String channel) throws IOException, ParseException {
 
         FileReader botReplies = new FileReader("messages.json");
         JSONObject jsonObject = (JSONObject) jsonParser.parse(botReplies);
