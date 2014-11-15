@@ -12,7 +12,6 @@ import static com.ullarah.rotterbot.Commands.commandLimit;
 import static com.ullarah.rotterbot.Log.info;
 import static com.ullarah.rotterbot.Messages.*;
 import static com.ullarah.rotterbot.Messages.botMessage;
-import static com.ullarah.rotterbot.Messages.sendRaw;
 
 class Console implements Runnable {
 
