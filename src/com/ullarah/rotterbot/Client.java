@@ -21,13 +21,13 @@ public class Client implements Runnable {
 
     public static final HashMap<String, ArrayList<String>> chanUserList = new HashMap<>();
     public static final HashMap<String, Boolean> botPlugins = new HashMap<>();
-    public static final HashMap<String, String> botAPIKeys = new HashMap<>();
+    private static final HashMap<String, String> botAPIKeys = new HashMap<>();
     public static final HashMap<String, String> botNice = new HashMap<>();
 
     private static final String config = "config.json";
     public static final JSONParser jsonParser = new JSONParser();
     public static BufferedWriter writer;
-    public static BufferedReader reader;
+    private static BufferedReader reader;
     private static Boolean online;
     private static Boolean debug;
     private static String server;
@@ -42,8 +42,6 @@ public class Client implements Runnable {
 
     private static ScheduledExecutorService pingTimeoutExecutor;
     public static ScheduledExecutorService commandCountExecutor;
-
-    public static String line;
 
     private static Boolean getOnline() {
         return online;
@@ -175,7 +173,7 @@ public class Client implements Runnable {
 
     }
 
-    public static void reconnect() throws InterruptedException, IOException {
+    private static void reconnect() throws InterruptedException, IOException {
 
         pingTimeoutExecutor.shutdown();
         commandCountExecutor.shutdown();
@@ -230,13 +228,13 @@ public class Client implements Runnable {
 
     }
 
-    public static boolean getPluginEnabled(String plugin) throws IOException, ParseException {
+    public static boolean getPluginEnabled(String plugin) {
 
         return botPlugins.get(plugin);
 
     }
 
-    public static String pluginKey(String plugin) throws IOException, ParseException {
+    public static String pluginKey(String plugin) {
 
         return botAPIKeys.get(plugin);
 
@@ -262,6 +260,7 @@ public class Client implements Runnable {
         }
         while (getOnline()) try {
 
+            String line;
             while ((line = reader.readLine()) != null) {
 
                 if (getDebug()) info(line);
@@ -295,7 +294,7 @@ public class Client implements Runnable {
         }
     }
 
-    public void refreshUserList(String channel, String[] users){
+    void refreshUserList(String channel, String[] users){
 
         ArrayList<String> chanUsers = new ArrayList<>();
 
@@ -308,7 +307,7 @@ public class Client implements Runnable {
 
     }
 
-    public static void runPingTimeout() {
+    private static void runPingTimeout() {
 
         Runnable getCurrentPing = new Runnable() {
             public void run() {
