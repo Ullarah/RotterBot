@@ -3,8 +3,11 @@ package com.ullarah.rotterbot;
 import com.ullarah.rotterbot.modules.Colour;
 import com.ullarah.rotterbot.modules.Privilege;
 import com.ullarah.rotterbot.modules.Youtube;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +38,12 @@ public class Messages {
         Client.writer.flush();
     }
 
-    public static void botReply(String s, String c) throws IOException {
+    public static void botMessage(String s, String c) throws IOException {
         sendRaw("PRIVMSG " + c + " :" + s);
+    }
+
+    public static void botAction(String s, String c) throws IOException {
+        sendRaw("PRIVMSG " + c + " :\u0001ACTION " + s + "\u0001");
     }
 
     public static void servMessage(String msg) throws IOException, InterruptedException, ParseException {
@@ -55,7 +62,9 @@ public class Messages {
         switch (chanRaw[1]) {
 
             case "PRIVMSG":
-                if (chanSaid.equals("ping")) botReply("pong", chanCurr);
+                pingtime = System.currentTimeMillis();
+
+                if (chanSaid.equals("ping")) botMessage("pong", chanCurr);
 
                 if (commandPattern.matcher(chanSaid).find()) {
                     if (commandCountWarning.size() == 0 && commandCount.size() == 0) {
@@ -64,7 +73,7 @@ public class Messages {
                     }
                     if (!commandCountWarning.get(chanCurr)) if (commandCount.get(chanCurr) >= 5) {
                         commandCountWarning.put(chanCurr, true);
-                        botReply(Colour.BOLD + Colour.RED + "Just wait a damn minute! Geez...", chanCurr);
+                        botMessage(Colour.BOLD + Colour.RED + "Just wait a damn minute! Geez...", chanCurr);
                     } else {
                         commandCount.put(chanCurr, commandCount.containsKey(chanCurr)
                                 ? commandCount.get(chanCurr) + 1 : 1);
@@ -72,37 +81,40 @@ public class Messages {
                     }
                 }
 
+                if (chanSaid.toLowerCase().contains(getNickname().toLowerCase())) if (getPluginEnabled("insults"))
+                    botMessage(getRandomMessage("insults", chanUser), chanCurr);
+
                 if (chanSaid.startsWith("s/") && sedPattern.matcher(chanSaid).find()) try {
                     String[] sedString = chanSaid.split("/", 3);
                     if (Utility.getLastMessage(chanUser).contains(sedString[1])) {
                         String replacedMessage = Utility.getLastMessage(chanUser).replaceAll(sedString[1], sedString[2]);
-                        botReply(chanUser + Colour.RESET + Colour.BOLD + " meant to say " +
+                        botMessage(chanUser + Colour.RESET + Colour.BOLD + " meant to say " +
                                 Colour.RESET + replacedMessage, chanCurr);
                     }
                 } catch (NullPointerException ignored) {
                 }
 
-                if (Youtube.isVideo(chanSaid) && pluginEnabled("youtube"))
-                    botReply("[YOUTUBE] " + Youtube.getVideoInfo(Youtube.getVideoID(chanSaid)), chanCurr);
+                if (Youtube.isVideo(chanSaid) && getPluginEnabled("youtube"))
+                    botMessage("[YOUTUBE] " + Youtube.getVideoInfo(Youtube.getVideoID(chanSaid)), chanCurr);
 
-                if (pluginEnabled("privilege")) Privilege.checkYour(chanUser, chanCurr, chanSaid);
+                if (getPluginEnabled("privilege")) Privilege.checkYour(chanUser, chanCurr, chanSaid);
 
                 if ((!commandPattern.matcher(chanSaid).find() || !sedPattern.matcher(chanSaid).find())
-                        && pluginEnabled("recall"))
+                        && getPluginEnabled("recall"))
                     Utility.setLastMessage(chanUser, chanSaid);
                 break;
 
             case "JOIN":
                 sendRaw("NAMES " + chanCurr);
-                if (pluginEnabled("welcome")) if (chanUser.equals(Client.getNickname())) {
+                if (getPluginEnabled("welcome")) if (chanUser.equals(Client.getNickname())) {
                     Thread.sleep(2500);
-                    botReply("Howdy everybody!", chanCurr);
+                    botMessage("Howdy everybody!", chanCurr);
                 } else if (tellUser.containsKey(chanUser.toLowerCase())) {
-                    botReply("Hey " + chanUser + "? Got a message for you!", chanCurr);
-                    for( Object message : tellMessage.get(chanUser)) botReply("[TELL] " + message, chanCurr);
+                    botMessage("Hey " + chanUser + "? Got a message for you!", chanCurr);
+                    for( Object message : tellMessage.get(chanUser)) botMessage("[TELL] " + message, chanCurr);
                     tellMessage.remove(chanUser);
                     tellUser.remove(chanUser);
-                } else botReply("Howdy " + chanUser + "!", chanCurr);
+                } else botMessage("Howdy " + chanUser + "!", chanCurr);
 
                 break;
 
@@ -115,6 +127,19 @@ public class Messages {
                 break;
 
         }
+
+    }
+
+    public static String getRandomMessage(String type, String user) throws IOException, ParseException {
+
+        FileReader botReplies = new FileReader("messages.json");
+        JSONObject jsonObject = (JSONObject) jsonParser.parse(botReplies);
+        botReplies.close();
+
+        JSONArray jsonReply = (JSONArray) jsonObject.get(type);
+        String gotInsult = (String) jsonReply.get(Utility.randInt(0,jsonReply.size()-1));
+
+        return gotInsult.replaceAll("#s", user);
 
     }
 
