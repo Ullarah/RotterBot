@@ -76,8 +76,8 @@ public class Osu {
         String countryOne = (String) osuUserOne.get("country");
         String countryTwo = (String) osuUserTwo.get("country");
 
-        Float rankOne = Float.parseFloat((String) osuUserOne.get("pp_rank"));
-        Float rankTwo = Float.parseFloat((String) osuUserTwo.get("pp_rank"));
+        Integer rankOne = Integer.parseInt((String) osuUserOne.get("pp_rank"));
+        Integer rankTwo = Integer.parseInt((String) osuUserTwo.get("pp_rank"));
 
         if( rankOne > rankTwo ){
             userOneFinal = Colour.GREEN + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
