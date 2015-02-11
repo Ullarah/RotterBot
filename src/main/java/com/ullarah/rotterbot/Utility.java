@@ -3,9 +3,12 @@ package com.ullarah.rotterbot;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
-import static com.ullarah.rotterbot.Messages.*;
+import static com.ullarah.rotterbot.Messages.recallMessage;
 
 public class Utility {
 
@@ -50,6 +53,39 @@ public class Utility {
 
     public static String urlDecode(String u) throws UnsupportedEncodingException {
         return URLDecoder.decode(u, "UTF-8");
+    }
+
+    private static String getCurrentTime() {
+        Date cal = Calendar.getInstance().getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        return "[" + sdf.format(cal.getTime()) + "]";
+    }
+
+    public static void showLevelMessage(levelType type, String message) {
+
+        System.out.println(getCurrentTime() + " " + type.text + " " + message);
+
+    }
+
+    public enum levelType {
+
+        CHAT("[CHAT]"),
+        INFO("[INFO]"),
+        WARN("[WARN]"),
+        ERROR("[ERROR]"),
+        DEBUG("[DEBUG]");
+
+        private final String text;
+
+        private levelType(final String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+
     }
 
 }

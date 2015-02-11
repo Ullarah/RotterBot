@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.ullarah.rotterbot.Messages.botMessage;
+import static com.ullarah.rotterbot.Messages.messageQueue;
 
 public class Privilege {
 
@@ -21,14 +21,14 @@ public class Privilege {
             "terminal illness", "terrorism", "torture", "transphobia", "violence", "vomit", "warfare", "weapons"
     );
 
-    public static void checkYour(String user, String chan, String said) throws IOException {
+    public static void checkYour(String user, String chan, String said) {
 
         int privIteration = 0;
 
         for (String word : said.split(" "))
             if (triggerWords.contains(word) && privIteration == 0) {
                 privIteration = 1;
-                botMessage(user + ", " + Colour.RED + Colour.BOLD + "Check your privilege!", chan);
+                messageQueue(user + ", " + Colour.RED + Colour.BOLD + "Check your privilege!", chan);
             }
 
     }

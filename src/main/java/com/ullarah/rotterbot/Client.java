@@ -7,26 +7,35 @@ import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.ullarah.rotterbot.Commands.commandLimit;
-import static com.ullarah.rotterbot.Log.error;
-import static com.ullarah.rotterbot.Log.info;
-import static com.ullarah.rotterbot.Messages.sendRaw;
+import static com.ullarah.rotterbot.Messages.*;
+import static com.ullarah.rotterbot.Utility.levelType.*;
+import static com.ullarah.rotterbot.Utility.showLevelMessage;
 
 public class Client implements Runnable {
 
+    private final Thread clientThread = new Thread(this);
     public static final HashMap<String, ArrayList<String>> chanUserList = new HashMap<>();
     public static final HashMap<String, Boolean> botPlugins = new HashMap<>();
-    private static final HashMap<String, String> botAPIKeys = new HashMap<>();
-    public static final HashMap<String, String> botNice = new HashMap<>();
-
-    private static final String config = "config.json";
+    public static final HashMap<String, String> botAttitude = new HashMap<>();
+    public static final HashMap<String, String> botMessages = new HashMap<>();
     public static final JSONParser jsonParser = new JSONParser();
+    private static final HashMap<String, String> botAPIKeys = new HashMap<>();
+    private static final String getLogRegex = "^(?:[:](\\S+) )?(\\S+)(?: (?!:)(.+?))?(?: [:](.+))?$";
+    private static final Pattern logPattern = Pattern.compile(getLogRegex);
+    private static final String config = "config.json";
     public static BufferedWriter writer;
+    public static long pingtime = System.currentTimeMillis();
+    public static ScheduledExecutorService queueDeliveryExecutor;
+    public static ScheduledExecutorService commandLimitExecutor;
     private static BufferedReader reader;
     private static Boolean online;
     private static Boolean debug;
@@ -38,10 +47,7 @@ public class Client implements Runnable {
     private static String password;
     private static JSONArray channels;
     private static Socket socket;
-    public static long pingtime = System.currentTimeMillis();
-
     private static ScheduledExecutorService pingTimeoutExecutor;
-    public static ScheduledExecutorService commandCountExecutor;
 
     private static Boolean getOnline() {
         return online;
@@ -83,7 +89,7 @@ public class Client implements Runnable {
         Client.realname = realname;
     }
 
-    private static String getLogin() {
+    static String getLogin() {
         return login;
     }
 
@@ -91,7 +97,7 @@ public class Client implements Runnable {
         Client.login = login;
     }
 
-    private static String getPassword() {
+    static String getPassword() {
         return password;
     }
 
@@ -133,20 +139,20 @@ public class Client implements Runnable {
         try {
             loadConfig(new FileReader(config));
         } catch (NullPointerException | ParseException | IOException e) {
-            error("Configuration file not found or corrupted.");
+            showLevelMessage(ERROR, "Configuration file not found or corrupted.");
             System.exit(0);
         }
 
         setSocket(new Socket(getServer(), getPort().intValue()));
         writer = new BufferedWriter(new OutputStreamWriter(getSocket().getOutputStream()));
         reader = new BufferedReader(new InputStreamReader(getSocket().getInputStream()));
-        info("CONN " + getServer());
+        showLevelMessage(INFO, "CONN " + getServer());
 
         if (getSocket().isConnected()) {
-            sendRaw("NICK " + getNickname());
-            info("NICK " + getNickname());
-            sendRaw("USER " + getLogin() + " \"\" \"\" :" + getRealname());
-            info("USER " + getLogin());
+            sendRawMessage("NICK " + getNickname());
+            showLevelMessage(INFO, "NICK " + getNickname());
+            sendRawMessage("USER " + getLogin() + " \"\" \"\" :" + getRealname());
+            showLevelMessage(INFO, "USER " + getLogin());
             writer.flush();
             runPingTimeout();
             setOnline(true);
@@ -157,16 +163,17 @@ public class Client implements Runnable {
     public static void disconnect() throws InterruptedException, IOException {
 
         pingTimeoutExecutor.shutdown();
-        commandCountExecutor.shutdown();
+        queueDeliveryExecutor.shutdown();
+        commandLimitExecutor.shutdown();
 
-        info("Disconnecting...");
+        showLevelMessage(INFO, "Disconnecting...");
         Thread.sleep(2500);
         for (Object channel : Client.getChannels()) {
-            sendRaw("PART " + channel);
-            info("PART " + channel);
+            sendRawMessage("PART " + channel);
+            showLevelMessage(INFO, "PART " + channel);
             Thread.sleep(2500);
         }
-        sendRaw("QUIT");
+        sendRawMessage("QUIT");
         Thread.sleep(5000);
         Client.getSocket().close();
         Thread.sleep(2500);
@@ -176,16 +183,17 @@ public class Client implements Runnable {
     private static void reconnect() throws InterruptedException, IOException {
 
         pingTimeoutExecutor.shutdown();
-        commandCountExecutor.shutdown();
+        queueDeliveryExecutor.shutdown();
+        commandLimitExecutor.shutdown();
 
-        info("Reconnecting...");
+        showLevelMessage(INFO, "Reconnecting...");
         Thread.sleep(1000);
         for (Object channel : Client.getChannels()) {
-            sendRaw("PART " + channel);
-            info("PART " + channel);
+            sendRawMessage("PART " + channel);
+            showLevelMessage(INFO, "PART " + channel);
             Thread.sleep(1000);
         }
-        sendRaw("QUIT");
+        sendRawMessage("QUIT");
         Thread.sleep(2500);
         Client.getSocket().close();
         Thread.sleep(2500);
@@ -211,9 +219,10 @@ public class Client implements Runnable {
         JSONArray channelList = new JSONArray();
 
         JSONObject getChannels = (JSONObject) jsonObject.get("channels");
-        for( Object channel : getChannels.keySet() ) {
+        for (Object channel : getChannels.keySet()) {
             channelList.add(channel);
-            botNice.put((String) channel,(String)getChannels.get(channel));
+            botAttitude.put((String) channel, (String) getChannels.get(channel));
+            System.out.println(botAttitude.toString());
         }
 
         setChannels(channelList);
@@ -221,10 +230,10 @@ public class Client implements Runnable {
         setDebug((boolean) jsonObject.get("debug"));
 
         JSONObject getPlugins = (JSONObject) jsonObject.get("plugins");
-        for( Object plugin : getPlugins.keySet() ) botPlugins.put((String) plugin, (Boolean) getPlugins.get(plugin));
+        for (Object plugin : getPlugins.keySet()) botPlugins.put((String) plugin, (Boolean) getPlugins.get(plugin));
 
         JSONObject getAPIKeys = (JSONObject) jsonObject.get("keys");
-        for( Object keys : getAPIKeys.keySet() ) botAPIKeys.put((String) keys, (String) getAPIKeys.get(keys));
+        for (Object keys : getAPIKeys.keySet()) botAPIKeys.put((String) keys, (String) getAPIKeys.get(keys));
 
     }
 
@@ -240,9 +249,27 @@ public class Client implements Runnable {
 
     }
 
+    private static void runPingTimeout() {
+
+        Runnable getCurrentPing = () -> {
+            long diffPing = System.currentTimeMillis() - pingtime;
+            if (diffPing >= 600000) try {
+                if (getDebug()) showLevelMessage(DEBUG, "Ping Timeout. Reconnecting.");
+                pingtime = System.currentTimeMillis();
+                reconnect();
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+            else if (getDebug()) showLevelMessage(DEBUG, "Ping Valid.");
+        };
+
+        pingTimeoutExecutor = Executors.newScheduledThreadPool(1);
+        pingTimeoutExecutor.scheduleAtFixedRate(getCurrentPing, 0, 5, TimeUnit.MINUTES);
+
+    }
+
     void start() {
 
-        Thread clientThread = new Thread(this);
         clientThread.setName("IRC Connection");
         clientThread.start();
 
@@ -255,76 +282,57 @@ public class Client implements Runnable {
             try {
                 reconnect();
             } catch (InterruptedException | IOException e1) {
-                error("Cannot connect to: " + getServer());
+                showLevelMessage(ERROR, "Cannot connect to: " + getServer());
             }
         }
         while (getOnline()) try {
 
-            String line;
-            while ((line = reader.readLine()) != null) {
+            String logCurrentLine;
+            while ((logCurrentLine = reader.readLine()) != null) {
 
-                if (getDebug()) info(line);
+                Matcher logLine = logPattern.matcher(logCurrentLine);
 
-                if (line.contains("PING")) {
-                    sendRaw("PONG " + line.substring(5));
-                    if (getDebug()) info("PONG " + line.substring(5));
-                    pingtime = System.currentTimeMillis();
-                }
+                if (getDebug()) showLevelMessage(DEBUG, logCurrentLine);
 
-                if (line.contains("376") && !line.contains("PRIVMSG")) {
-                    sendRaw("PRIVMSG NickServ :IDENTIFY " + getPassword());
-                    info("IDEN " + getLogin());
-                }
-
-                if (line.contains("353") && !line.contains("PRIVMSG"))
-                    refreshUserList(line.split(" ", 6)[4], line.split(" ", 6)[5].split(" "));
-
-                if (line.contains("NOTICE") && line.contains("identified") && !line.contains("PRIVMSG"))
-                    for (Object channel : getChannels()) {
-                        info("JOIN " + channel.toString().toLowerCase());
-                        sendRaw("JOIN " + channel.toString().toLowerCase());
-                        commandLimit(channel.toString().toLowerCase());
-                        Thread.sleep(2500);
-                    }
-                else Messages.servMessage(line);
+                if(logLine.find())
+                    servMessage(
+                            logLine.group(0), //raw
+                            logLine.group(1), //prefix
+                            logLine.group(2), //type
+                            logLine.group(3), //destination
+                            logLine.group(4)  //message
+                    );
 
                 writer.flush();
+
             }
         } catch (IOException | InterruptedException | ParseException ignored) {
         }
     }
 
-    void refreshUserList(String channel, String[] users){
+    static void joinPresetChannels() throws InterruptedException, IOException {
+
+        for (Object channel : getChannels()) {
+            showLevelMessage(INFO, "JOIN " + channel.toString().toLowerCase());
+            sendRawMessage("JOIN " + channel.toString().toLowerCase());
+            commandLimit(channel.toString().toLowerCase());
+            Thread.sleep(2500);
+        }
+
+        deliverQueue();
+
+    }
+
+    static void refreshUserList(String channel, String[] users) {
 
         ArrayList<String> chanUsers = new ArrayList<>();
 
-        for( String user : users ) {
+        for (String user : users) {
             String[] userNameValid = user.split("[a-zA-Z0-9]+");
             chanUsers.add(userNameValid.length == 0 ? user.toLowerCase() : user.substring(1).toLowerCase());
         }
 
-        chanUserList.put(channel,chanUsers);
-
-    }
-
-    private static void runPingTimeout() {
-
-        Runnable getCurrentPing = new Runnable() {
-            public void run() {
-                long diffPing = System.currentTimeMillis() - pingtime;
-                if(diffPing >= 600000) try {
-                    if (getDebug()) info("Ping Timeout. Reconnecting.");
-                    pingtime = System.currentTimeMillis();
-                    reconnect();
-                } catch (InterruptedException | IOException e) {
-                    e.printStackTrace();
-                }
-                else if (getDebug()) info("Ping Valid.");
-            }
-        };
-
-        pingTimeoutExecutor = Executors.newScheduledThreadPool(1);
-        pingTimeoutExecutor.scheduleAtFixedRate(getCurrentPing, 0, 5, TimeUnit.MINUTES);
+        chanUserList.put(channel, chanUsers);
 
     }
 

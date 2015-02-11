@@ -1,7 +1,6 @@
 package com.ullarah.rotterbot.modules;
 
 import com.ullarah.rotterbot.Utility;
-import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

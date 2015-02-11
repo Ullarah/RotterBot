@@ -12,9 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import static com.ullarah.rotterbot.Client.*;
-import static com.ullarah.rotterbot.Client.getPluginEnabled;
-import static com.ullarah.rotterbot.Log.info;
 import static com.ullarah.rotterbot.Messages.*;
+import static com.ullarah.rotterbot.Utility.levelType.INFO;
+import static com.ullarah.rotterbot.Utility.showLevelMessage;
 
 class Commands {
 
@@ -40,29 +40,29 @@ class Commands {
 
         switch (botCommand.toUpperCase()) {
             case "ARGS":
-                botMessage(botArgs.length == 0 ? "You used " + botCommand + " with no arguments"
+                messageQueue(botArgs.length == 0 ? "You used " + botCommand + " with no arguments"
                         : "You used " + botCommand + " with: " + Arrays.toString(botArgs).toUpperCase(), chanCurr);
                 break;
 
             case "T":
                 if (getPluginEnabled("showerthought"))
-                    botMessage(ShowerThought.randomThought(), chanCurr);
+                    messageQueue(ShowerThought.randomThought(), chanCurr);
                 break;
 
             case "G":
                 Boolean isSafe = true;
                 if (getPluginEnabled("googlesearch")) if (botArgs.length == 0)
-                    botMessage("[GOOGLE] Yes, let me search for nothing... nothing found!", chanCurr);
+                    messageQueue("[GOOGLE] Yes, let me search for nothing... nothing found!", chanCurr);
                 else {
                     if (botArgs[0].toUpperCase().equals("!SAFE")) isSafe = false;
-                    botMessage(Google.feelingLucky(Utility.stringJoin(botArgs, " ")
+                    messageQueue(Google.feelingLucky(Utility.stringJoin(botArgs, " ")
                             .toUpperCase().replaceFirst("!SAFE ", ""), isSafe), chanCurr);
                 }
                 break;
 
             case "UD":
                 if (getPluginEnabled("urbandictionary"))
-                    botMessage(botArgs.length == 0 ? "[UD] Yes, let me search for nothing... nothing found!"
+                    messageQueue(botArgs.length == 0 ? "[UD] Yes, let me search for nothing... nothing found!"
                             : UrbanDictionary.getWord(Utility.stringJoin(botArgs, " ")), chanCurr);
                 break;
 
@@ -71,62 +71,62 @@ class Commands {
                     switch (botArgs.length) {
 
                         case 0:
-                            botMessage("[OSU] Usage: <player> [best|recent]", chanCurr);
+                            messageQueue("[OSU] Usage: <player> [best|recent]", chanCurr);
                             break;
 
                         case 1:
-                            botMessage(Osu.getUserInfo(botArgs[0]), chanCurr);
+                            messageQueue(Osu.getUserInfo(botArgs[0]), chanCurr);
                             break;
 
                         case 2:
                             switch (botArgs[1].toUpperCase()) {
 
                                 case "BEST":
-                                    botMessage(Osu.getUserType(botArgs[0], "get_user_best"), chanCurr);
+                                    messageQueue(Osu.getUserType(botArgs[0], "get_user_best"), chanCurr);
                                     break;
 
                                 case "RECENT":
                                     try {
-                                        botMessage(Osu.getUserType(botArgs[0], "get_user_recent"), chanCurr);
+                                        messageQueue(Osu.getUserType(botArgs[0], "get_user_recent"), chanCurr);
                                     } catch (IndexOutOfBoundsException ex) {
-                                        botMessage("[OSU] No recent plays.", chanCurr);
+                                        messageQueue("[OSU] No recent plays.", chanCurr);
                                     }
                                     break;
 
                                 default:
-                                    botMessage("[OSU] Usage: <player> [best|recent]", chanCurr);
+                                    messageQueue("[OSU] Usage: <player> [best|recent]", chanCurr);
                                     break;
 
                             }
                             break;
 
                         case 3:
-                            if(botArgs[1].equals("vs")) botMessage(Osu.getVersus(botArgs[0], botArgs[2]), chanCurr);
+                            if (botArgs[1].equals("vs")) messageQueue(Osu.getVersus(botArgs[0], botArgs[2]), chanCurr);
                             break;
 
                     }
                 } catch (IndexOutOfBoundsException ex) {
-                    botMessage("[OSU] Player not found.", chanCurr);
+                    messageQueue("[OSU] Player not found.", chanCurr);
                 }
                 break;
 
             case "WA":
                 if (getPluginEnabled("wolframalpha"))
-                    botMessage(botArgs.length == 0 ? "[WOLFRAM] Yes, let me search for nothing... nothing found!"
+                    messageQueue(botArgs.length == 0 ? "[WOLFRAM] Yes, let me search for nothing... nothing found!"
                             : "[WOLFRAM] " + WolframAlpha.calculate(Utility.stringJoin(botArgs, " ")), chanCurr);
                 break;
 
             case "YT":
                 if (getPluginEnabled("youtube"))
-                    botMessage(botArgs.length == 0 ? "[YOUTUBE] Yes, let me search for nothing... nothing found!"
+                    messageQueue(botArgs.length == 0 ? "[YOUTUBE] Yes, let me search for nothing... nothing found!"
                             : "[YOUTUBE] " + Youtube.getVideoResult(Utility.stringJoin(botArgs, " ")), chanCurr);
                 break;
 
             case "FM":
                 if (getPluginEnabled("lastfm")) if (botArgs.length == 0) {
-                    botMessage("[LASTFM] Usage: <user> [top]", chanCurr);
-                    botMessage("[LASTFM] Usage: similar <artist> [track]", chanCurr);
-                    botMessage("[LASTFM] Usage: chart <top|hype>", chanCurr);
+                    messageQueue("[LASTFM] Usage: <user> [top]", chanCurr);
+                    messageQueue("[LASTFM] Usage: similar <artist> [track]", chanCurr);
+                    messageQueue("[LASTFM] Usage: chart <top|hype>", chanCurr);
                 } else switch (botArgs[0].toUpperCase()) {
 
                     case "SIMILAR":
@@ -135,20 +135,20 @@ class Commands {
                             switch (similar.length) {
 
                                 case 1:
-                                    botMessage(LastFM.getArtistSimilar(similar[0]), chanCurr);
+                                    messageQueue(LastFM.getArtistSimilar(similar[0]), chanCurr);
                                     break;
 
                                 case 2:
-                                    botMessage(LastFM.getTrackSimilar(similar[0], similar[1]), chanCurr);
+                                    messageQueue(LastFM.getTrackSimilar(similar[0], similar[1]), chanCurr);
                                     break;
 
                                 default:
-                                    botMessage("[LASTFM] Usage: similar <artist> [track]", chanCurr);
+                                    messageQueue("[LASTFM] Usage: similar <artist> [track]", chanCurr);
                                     break;
 
                             }
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            botMessage("[LASTFM] Usage: similar <artist> [track]", chanCurr);
+                            messageQueue("[LASTFM] Usage: similar <artist> [track]", chanCurr);
                         }
                         break;
 
@@ -157,20 +157,20 @@ class Commands {
                             switch (botArgs[1].toUpperCase()) {
 
                                 case "TOP":
-                                    botMessage(LastFM.getTopTrack(), chanCurr);
+                                    messageQueue(LastFM.getTopTrack(), chanCurr);
                                     break;
 
                                 case "HYPE":
-                                    botMessage(LastFM.getHypedTrack(), chanCurr);
+                                    messageQueue(LastFM.getHypedTrack(), chanCurr);
                                     break;
 
                                 default:
-                                    botMessage("[LASTFM] Usage: chart <top|hype>", chanCurr);
+                                    messageQueue("[LASTFM] Usage: chart <top|hype>", chanCurr);
                                     break;
 
                             }
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            botMessage("[LASTFM] Usage: chart <top|hype>", chanCurr);
+                            messageQueue("[LASTFM] Usage: chart <top|hype>", chanCurr);
                         }
                         break;
 
@@ -179,28 +179,28 @@ class Commands {
                             switch (botArgs[1].toUpperCase()) {
 
                                 case "TOP":
-                                    botMessage(LastFM.getUserTopTrack(botArgs[0]), chanCurr);
+                                    messageQueue(LastFM.getUserTopTrack(botArgs[0]), chanCurr);
                                     break;
 
                                 default:
-                                    botMessage("[LASTFM] Usage: <user> [top]", chanCurr);
+                                    messageQueue("[LASTFM] Usage: <user> [top]", chanCurr);
                                     break;
 
                             }
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            botMessage(LastFM.getUserRecentTrack(botArgs[0]), chanCurr);
+                            messageQueue(LastFM.getUserRecentTrack(botArgs[0]), chanCurr);
                         }
                         break;
                 }
                 break;
 
             case "HUNGRY":
-                if (getPluginEnabled("bigoven")) botMessage(BigOven.recipe(), chanCurr);
+                if (getPluginEnabled("bigoven")) messageQueue(BigOven.recipe(), chanCurr);
                 break;
 
             case "RECALL":
                 if (getPluginEnabled("recall"))
-                    botMessage(botArgs.length == 0 ? Utility.getLastMessage(chanUser) == null
+                    messageQueue(botArgs.length == 0 ? Utility.getLastMessage(chanUser) == null
                             ? "[RECALL] You haven't said anything?"
                             : "[RECALL] " + Utility.getLastMessage(chanUser)
                             : Utility.getLastMessage(botArgs[0]) == null ? "[RECALL] They haven't said anything?"
@@ -208,43 +208,43 @@ class Commands {
                 break;
 
             case "IGNORE":
-                if(botArgs.length == 0){
-                    botMessage("[IGNORE] Ignore whom?", chanCurr);
+                if (botArgs.length == 0) {
+                    messageQueue("[IGNORE] Ignore whom?", chanCurr);
                 } else if (ignoreUserList.contains(botArgs[0].toLowerCase())) {
                     ignoreUserList.remove(botArgs[0].toLowerCase());
-                    botMessage("[IGNORE] Oh, " + botArgs[0] + " wants to talk to me again?", chanCurr);
+                    messageQueue("[IGNORE] Oh, " + botArgs[0] + " wants to talk to me again?", chanCurr);
                 } else {
                     ignoreUserList.add(botArgs[0].toLowerCase());
-                    botMessage("[IGNORE] Sure thing. I'll ignore " + botArgs[0] + " from now on!", chanCurr);
+                    messageQueue("[IGNORE] Sure thing. I'll ignore " + botArgs[0] + " from now on!", chanCurr);
                 }
                 break;
 
             case "LOBOTOMY":
-                if (getPluginEnabled("replies")){
-                    botAction("drools", chanCurr);
-                    botPlugins.put("replies",false);
+                if (getPluginEnabled("replies")) {
+                    sendAction("drools", chanCurr);
+                    botPlugins.put("replies", false);
                 } else {
-                    botAction("blinks rapidly", chanCurr);
-                    botMessage("Wha? What happened?", chanCurr);
-                    botPlugins.put("replies",true);
+                    sendAction("blinks rapidly", chanCurr);
+                    sendMessage("Wha? What happened?", chanCurr);
+                    botPlugins.put("replies", true);
                 }
                 break;
 
             case "TELL":
-                if (getPluginEnabled("tell")){
+                if (getPluginEnabled("tell")) {
 
-                    sendRaw("NAMES " + chanCurr);
+                    sendRawMessage("NAMES " + chanCurr);
                     botArgs = Utility.stringJoin(botArgs, " ").split(" ", 2);
 
                     try {
                         switch (botArgs.length) {
                             case 1:
-                                botMessage("[TELL] Usage: <user> <message>", chanCurr);
+                                messageQueue("[TELL] Usage: <user> <message>", chanCurr);
                                 break;
 
                             case 2:
-                                if(chanUserList.get(chanCurr).contains(botArgs[0].toLowerCase()))
-                                    botMessage(botArgs[0].toLowerCase().equals(chanUser.toLowerCase())
+                                if (chanUserList.get(chanCurr).contains(botArgs[0].toLowerCase()))
+                                    messageQueue(botArgs[0].toLowerCase().equals(chanUser.toLowerCase())
                                             ? "[TELL] Talking to yourself again " + chanUser + "?"
                                             : botArgs[0].toLowerCase().equals(getNickname().toLowerCase())
                                             ? "[TELL] I'm right here! What's up " + chanUser + "?"
@@ -260,27 +260,27 @@ class Commands {
                                         }});
                                     }
                                     tellUser.put(botArgs[0], tellMessage);
-                                    botMessage("[TELL] Okay, I'll try my best to let them know next time they're online.", chanCurr);
-                                } else botMessage("[TELL] I can only send 5 messages to a user.", chanCurr);
+                                    messageQueue("[TELL] Okay, I'll try my best to let them know next time they're online.", chanCurr);
+                                } else messageQueue("[TELL] I can only send 5 messages to a user.", chanCurr);
                                 break;
 
                             default:
-                                botMessage("[TELL] Usage: <user> <message>", chanCurr);
+                                messageQueue("[TELL] Usage: <user> <message>", chanCurr);
                                 break;
                         }
-                    } catch (IndexOutOfBoundsException ex){
-                        botMessage("[TELL] Usage: <user> <message>", chanCurr);
+                    } catch (IndexOutOfBoundsException ex) {
+                        messageQueue("[TELL] Usage: <user> <message>", chanCurr);
                     }
 
                 }
                 break;
 
             case "HELP":
-                botMessage("Commands: T | G | UD | OSU | WA | YT | FM | HUNGRY | RECALL | IGNORE | LOBOTOMY | TELL", chanCurr);
+                sendMessage("Commands: T | G | UD | OSU | WA | YT | FM | HUNGRY | RECALL | IGNORE | LOBOTOMY | TELL", chanCurr);
                 break;
 
             default:
-                botMessage("That's no command I've heard of " + chanUser + "?", chanCurr);
+                sendMessage("That's no command I've heard of " + chanUser + "?", chanCurr);
                 break;
         }
 
@@ -288,16 +288,14 @@ class Commands {
 
     public static void commandLimit(final String chanCurr) {
 
-        Runnable resetCommandLimit = new Runnable() {
-            public void run() {
-                commandCount.remove(chanCurr);
-                commandCountWarning.remove(chanCurr);
-                if (getDebug()) info("Command count reset for: " + chanCurr);
-            }
+        Runnable resetCommandLimit = () -> {
+            commandCount.remove(chanCurr);
+            commandCountWarning.remove(chanCurr);
+            if (getDebug()) showLevelMessage(INFO, "Command count reset for: " + chanCurr);
         };
 
-        commandCountExecutor = Executors.newScheduledThreadPool(1);
-        commandCountExecutor.scheduleAtFixedRate(resetCommandLimit, 0, 2, TimeUnit.MINUTES);
+        commandLimitExecutor = Executors.newScheduledThreadPool(1);
+        commandLimitExecutor.scheduleAtFixedRate(resetCommandLimit, 0, 2, TimeUnit.MINUTES);
 
     }
 

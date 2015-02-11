@@ -113,7 +113,7 @@ public class Youtube {
         String videoLikes = "0";
         String videoDislikes = "0";
 
-        if(entryData.containsKey("yt$rating")){
+        if (entryData.containsKey("yt$rating")) {
             JSONObject ratingObject = (JSONObject) entryData.get("yt$rating");
             videoLikes = (String) ratingObject.get("numLikes");
             videoDislikes = (String) ratingObject.get("numDislikes");

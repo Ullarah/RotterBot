@@ -60,15 +60,15 @@ public class Osu {
 
     }
 
-    public static String getVersus(String userOne, String userTwo) throws UnsupportedEncodingException{
+    public static String getVersus(String userOne, String userTwo) throws UnsupportedEncodingException {
 
-        if(userOne.toLowerCase().equals(userTwo.toLowerCase())) return "[OSU] ... How vain!";
+        if (userOne.toLowerCase().equals(userTwo.toLowerCase())) return "[OSU] ... How vain!";
 
         String userOneFinal = null;
         String userTwoFinal = null;
 
         String userCompare = null;
-        Integer rankDiff = 0;
+        Integer rankDiff;
 
         JSONObject osuUserOne = getAPI("get_user", "&u=" + urlEncode(userOne));
         JSONObject osuUserTwo = getAPI("get_user", "&u=" + urlEncode(userTwo));
@@ -82,20 +82,20 @@ public class Osu {
         Integer rankOne = Integer.parseInt((String) osuUserOne.get("pp_rank"));
         Integer rankTwo = Integer.parseInt((String) osuUserTwo.get("pp_rank"));
 
-        if( rankOne > rankTwo ){
-            rankDiff = rankOne - rankTwo;
+        if (rankOne < rankTwo) {
+            rankDiff = rankTwo - rankOne;
             userOneFinal = Colour.GREEN + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
             userTwoFinal = Colour.RED + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
             userCompare = nameOne + " is beating " + nameTwo + " by " + rankDiff + " ranks!";
         }
-        if( rankOne < rankTwo ){
-            rankDiff = rankTwo - rankOne;
+        if (rankOne > rankTwo) {
+            rankDiff = rankOne - rankTwo;
             userOneFinal = Colour.RED + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
             userTwoFinal = Colour.GREEN + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
             userCompare = nameTwo + " is beating " + nameOne + " by " + rankDiff + " ranks!";
 
         }
-        if( rankOne.equals( rankTwo ) ){
+        if (rankOne.equals(rankTwo)) {
             userOneFinal = Colour.GOLD + nameOne + Colour.RESET + " [" + countryOne + "] " + rankOne;
             userTwoFinal = Colour.GOLD + nameTwo + Colour.RESET + " [" + countryTwo + "] " + rankTwo;
             userCompare = "Both are the exact same rank!";

@@ -3,25 +3,25 @@
         "naughty":[
             "Oh go away, I don't like you #s!",
             "How about a big fat no #s!",
-            "Oh #s, can you just go away now!",
+            "Oh #s, can you just go away now!"
         ],
         "nice":[
             "That's very nice of you to say #s!",
             "I'm not quite sure what you mean #s, I'm so sorry!",
-            "I'm not so sure about that #s.",
+            "I'm not so sure about that #s."
         ]
-    }
+    },
     "join":[
         "Hey #s! How's it going?",
-        "Howdy #s!",
-    ]
-    "chatter"[
+        "Howdy #s!"
+    ],
+    "chatter":[
         "Lets go dance in the tulips!",
         "It's lewd, lascivious, salacious, outrageous!",
-        "It's outrageous, egregious, preposterous!",
-    ]
-    "actions"[
+        "It's outrageous, egregious, preposterous!"
+    ],
+    "actions":[
         "sighs",
-        "looks around",
+        "looks around"
     ]
 }

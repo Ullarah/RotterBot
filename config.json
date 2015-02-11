@@ -1,13 +1,13 @@
 {
-	"server":"irc.freenode.net",
+	"server":"card.freenode.net",
 	"port":6667,
-	"nickname":"nickhere",
-	"realname":"realhere",
-	"login":"loginhere",
-	"password":"passhere",
+	"nickname":"RotterBot",
+	"realname":"rotterbot",
+	"login":"RotterBot",
+	"password":"password",
 	"channels":{
-		"#freenode":"nice",
-		"#whatever":"naughty",
+		"#channel1":"naughty",
+		"#channel2":"nice"
 	},
 	"plugins":{
 		"welcome":true,
@@ -22,13 +22,13 @@
 		"youtube":true,
 		"recall":true,
 		"tell":true,
-		"replies":true,
+		"replies":true
 	},
 	"keys":{
-		"osu":"putkeyhere",
-		"bigoven":"putkeyhere",
-		"wolframalpha":"putkeyhere",
-		"lastfm":"putkeyhere",
+		"osu":"00000",
+		"bigoven":"00000",
+		"wolframalpha":"00000",
+		"lastfm":"00000"
 	},
 	"debug":false
 }
